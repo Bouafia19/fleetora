@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "118643219504",
+    "project_id": "tawssil-380715",
+    "storage_bucket": "tawssil-380715.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118643219504:android:e95ce152b0e3187692e1f5",
+        "android_client_info": {
+          "package_name": "com.nextchallenge.tawssil"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118643219504-ftacrkl499bqflqh9v0rq4ie6ccq2b2u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsb8BE6mPq_GzZ1RvQf2loPjfAgYieh0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "118643219504-ftacrkl499bqflqh9v0rq4ie6ccq2b2u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118643219504:android:52f67a75a174a5d192e1f5",
+        "android_client_info": {
+          "package_name": "com.nextchallenge.tawssil_patenaire"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118643219504-ftacrkl499bqflqh9v0rq4ie6ccq2b2u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsb8BE6mPq_GzZ1RvQf2loPjfAgYieh0Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "118643219504-ftacrkl499bqflqh9v0rq4ie6ccq2b2u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,41 @@
+{
+  "name": "fleetora-backend",
+  "version": "1.0.0",
+  "description": "Fleetora Smart Freight & Logistics Platform Backend API",
+  "main": "server.js",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "seed": "node scripts/seed.js"
+  },
+  "keywords": [
+    "fleetora",
+    "freight",
+    "logistics",
+    "transport",
+    "express5",
+    "mongodb"
+  ],
+  "author": "Fleetora Team",
+  "license": "ISC",
+  "dependencies": {
+    "@casl/ability": "^6.8.1",
+    "@casl/mongoose": "^8.0.5",
+    "bcrypt": "^5.1.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.24.5",
+    "morgan": "^1.12.1",
+    "socket.io": "^4.8.1",
+    "validator": "^13.12.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9",
+    "socket.io-client": "^4.8.4"
+  }
+}

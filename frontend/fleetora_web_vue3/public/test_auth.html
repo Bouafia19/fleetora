@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Auth Test Helper</title>
+</head>
+<body>
+  <script>
+    localStorage.setItem('userInfo', JSON.stringify({
+      token: 'mock_jwt_token_for_visual_testing',
+      user: {
+        _id: '6ad20398ab8c26727248e987',
+        firstName: 'Karim',
+        lastName: 'Benali',
+        phone: '+213550000003',
+        email: 'karim@fleetora.com',
+        role: 'client'
+      }
+    }));
+    const params = new URLSearchParams(window.location.search);
+    const lang = params.get('lang') || 'fr';
+    localStorage.setItem('fleetora_locale', lang);
+    if (lang === 'ar') {
+      document.documentElement.dir = 'rtl';
+    }
+    const target = params.get('to') || '/map';
+    window.location.href = target;
+  </script>
+</body>
+</html>

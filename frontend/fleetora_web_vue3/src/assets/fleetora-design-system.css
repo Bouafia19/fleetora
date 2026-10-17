@@ -1,0 +1,251 @@
+/* ==========================================================================
+   FLEETORA DESIGN SYSTEM — PREMIUM ENTERPRISE LOGISTICS TOKENS
+   Color Palette, Spacing Scale, Typography, Components & RTL Support
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Brand Core */
+  --fl-primary: #00366F;
+  --fl-primary-dark: #002247;
+  --fl-primary-light: #004F9E;
+  --fl-primary-50: #EEF5FC;
+  --fl-primary-100: #D8E7FA;
+  --fl-primary-200: #B0CFF5;
+  
+  /* Executive Slate & Neutrals */
+  --fl-secondary: #0F172A;
+  --fl-secondary-light: #1E293B;
+  --fl-slate-50: #F8FAFC;
+  --fl-slate-100: #F1F5F9;
+  --fl-slate-200: #E2E8F0;
+  --fl-slate-300: #CBD5E1;
+  --fl-slate-400: #94A3B8;
+  --fl-slate-500: #64748B;
+  --fl-slate-600: #475569;
+  --fl-slate-700: #334155;
+  --fl-slate-800: #1E293B;
+  --fl-slate-900: #0F172A;
+
+  /* Accent Sky Blue */
+  --fl-accent: #0EA5E9;
+  --fl-accent-dark: #0284C7;
+  --fl-accent-light: #E0F2FE;
+  --fl-accent-50: #F0F9FF;
+
+  /* Semantic Feedback */
+  --fl-success: #10B981;
+  --fl-success-dark: #059669;
+  --fl-success-light: #D1FAE5;
+  --fl-success-50: #ECFDF5;
+
+  --fl-warning: #F59E0B;
+  --fl-warning-dark: #D97706;
+  --fl-warning-light: #FEF3C7;
+  --fl-warning-50: #FFFBEB;
+
+  --fl-error: #EF4444;
+  --fl-error-dark: #DC2626;
+  --fl-error-light: #FEE2E2;
+  --fl-error-50: #FEF2F2;
+
+  --fl-info: #0284C7;
+  --fl-info-light: #E0F2FE;
+
+  /* Surfaces & Canvas */
+  --fl-background: #F8FAFC;
+  --fl-surface: #FFFFFF;
+  --fl-surface-variant: #F1F5F9;
+  --fl-border: #E2E8F0;
+  --fl-border-strong: #CBD5E1;
+  --fl-border-focus: #0EA5E9;
+
+  /* Typography Colors */
+  --fl-text-primary: #0F172A;
+  --fl-text-secondary: #475569;
+  --fl-text-muted: #94A3B8;
+  --fl-text-on-primary: #FFFFFF;
+
+  /* Spacing Scale */
+  --fl-space-1: 4px;
+  --fl-space-2: 8px;
+  --fl-space-3: 12px;
+  --fl-space-4: 16px;
+  --fl-space-5: 20px;
+  --fl-space-6: 24px;
+  --fl-space-8: 32px;
+  --fl-space-10: 40px;
+  --fl-space-12: 48px;
+
+  /* Border Radii */
+  --fl-radius-xs: 4px;
+  --fl-radius-sm: 8px;
+  --fl-radius-md: 12px;
+  --fl-radius-lg: 16px;
+  --fl-radius-xl: 20px;
+  --fl-radius-pill: 9999px;
+
+  /* Restrained Elevation & Shadows */
+  --fl-shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --fl-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --fl-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.03);
+  --fl-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+  --fl-shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+
+  /* Transitions */
+  --fl-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --fl-transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base typography */
+html, body, .v-application {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  color: var(--fl-text-primary);
+  background-color: var(--fl-background) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Professional Surface Cards */
+.fl-card {
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-radius-lg) !important;
+  box-shadow: var(--fl-shadow-sm);
+  transition: box-shadow var(--fl-transition-normal), border-color var(--fl-transition-normal);
+}
+
+.fl-card-interactive {
+  cursor: pointer;
+}
+.fl-card-interactive:hover {
+  border-color: var(--fl-accent);
+  box-shadow: var(--fl-shadow-md);
+  transform: translateY(-1px);
+}
+
+/* Clean Header & Toolbar */
+.fl-header-clean {
+  background: #FFFFFF !important;
+  border-bottom: 1px solid var(--fl-border) !important;
+  box-shadow: none !important;
+}
+
+/* Glass Floating Console */
+.fl-glass {
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: 0 12px 24px -4px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Status Chips & Badges */
+.fl-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--fl-radius-pill);
+  line-height: 1;
+}
+
+.fl-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  margin-inline-end: 6px;
+}
+
+.fl-badge-success {
+  background: var(--fl-success-50);
+  color: var(--fl-success-dark);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.fl-badge-success .fl-badge-dot { background: var(--fl-success); }
+
+.fl-badge-warning {
+  background: var(--fl-warning-50);
+  color: var(--fl-warning-dark);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.fl-badge-warning .fl-badge-dot { background: var(--fl-warning); }
+
+.fl-badge-error {
+  background: var(--fl-error-50);
+  color: var(--fl-error-dark);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.fl-badge-error .fl-badge-dot { background: var(--fl-error); }
+
+.fl-badge-info {
+  background: var(--fl-accent-50);
+  color: var(--fl-accent-dark);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+.fl-badge-info .fl-badge-dot { background: var(--fl-accent); }
+
+/* Pulsating Live Indicator */
+.fl-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--fl-success);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: flPulse 2s infinite;
+}
+
+@keyframes flPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Touch Friendly Utilities */
+.fl-touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Primary Brand Buttons */
+.fl-btn-primary {
+  background-color: var(--fl-primary) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  border-radius: var(--fl-radius-md) !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: var(--fl-shadow-sm) !important;
+  transition: all var(--fl-transition-fast) !important;
+}
+
+.fl-btn-primary:hover {
+  background-color: var(--fl-primary-light) !important;
+  box-shadow: var(--fl-shadow-md) !important;
+  transform: translateY(-1px);
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .fl-mirror-rtl {
+  transform: scaleX(-1);
+}
+
+:focus-visible {
+  outline: 2px solid var(--fl-accent) !important;
+  outline-offset: 2px !important;
+}

@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Audit Auth Client</title></head>
+<body>
+<script>
+  const data = {"user":{"_id":"6ad20398ab8c26727248e987","email":"client@fleetora.com","firstName":"Amine","lastName":"Meziane","language":"fr","phone":"+213550000003","role":"client"},"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2YWQyMDM5OGFiOGMyNjcyNzI0OGU5ODciLCJpYXQiOjE3OTIxNzIyNTJ9.qKmZwgZ9G5x2zuFwaaHShN9vQlPaRdXY6AwmzePpx40"};
+  localStorage.setItem('userInfo', JSON.stringify(data));
+  localStorage.setItem('CapacitorStorage.userInfo', JSON.stringify(data));
+  const target = new URLSearchParams(window.location.search).get('target') || '/tabs';
+  window.location.href = target;
+</script>
+</body>
+</html>

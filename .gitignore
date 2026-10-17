@@ -1,0 +1,73 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production & Build outputs
+dist/
+dist-ssr/
+build/
+bin/
+gen/
+out/
+*.tsbuildinfo
+
+# Environment & Secrets (DO NOT COMMIT)
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.jks
+*.keystore
+*.p12
+*.pfx
+nginx/ssl/
+.well-known/
+*firebase-adminsdk*.json
+*service-account*.json
+*serviceAccount*.json
+tawssil-*.json
+
+# Android & Gradle
+.gradle/
+*.apk
+*.ap_
+*.aab
+*.aar
+*.dex
+*.class
+local.properties
+proguard/
+captures/
+.navigation/
+
+# iOS & CocoaPods
+Pods/
+*.xcworkspace
+xcuserdata/
+DerivedData/
+
+# Logs & Caches
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.parcel-cache/
+.eslintcache
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*~

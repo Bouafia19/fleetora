@@ -1,0 +1,54 @@
+services:
+  mongo_db:
+    container_name: fleetora_db
+    image: mongo:latest
+    restart: always
+    volumes:
+      - fleetora_mongo_db:/data/db
+
+  api-1:
+    build: ./backend
+    container_name: fleetora_api
+    environment:
+      PORT: 4000
+      NODE_ENV: production
+      MONGO_URI: mongodb://mongo_db:27017/fleetora
+      SECRET: fleetora_production_secret_key_2026_secured
+      ACCOUNT_SID: ${ACCOUNT_SID:-AC_mock_twilio_account_sid_fleetora}
+      AUTH_TOKEN: ${AUTH_TOKEN:-mock_twilio_auth_token_fleetora}
+      SERVICE_ID: ${SERVICE_ID:-mock_twilio_service_id_fleetora}
+      CORS_ORIGINS: "*"
+    depends_on:
+      - mongo_db
+    restart: unless-stopped
+
+  admin_panel:
+    build: ./frontend/adminPanel
+    container_name: fleetora_admin_panel
+    depends_on:
+      - api-1
+    restart: unless-stopped
+
+  web_client_vuetify:
+    build: ./frontend/fleetora_web_vue3
+    container_name: fleetora_web_client
+    depends_on:
+      - api-1
+    restart: unless-stopped
+
+  nginx:
+    build: ./nginx
+    container_name: fleetora_nginx
+    volumes:
+      - ./nginx/fleetora.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api-1
+      - admin_panel
+      - web_client_vuetify
+    ports:
+      - "80:80"
+      - "443:443"
+    restart: unless-stopped
+
+volumes:
+  fleetora_mongo_db: {}

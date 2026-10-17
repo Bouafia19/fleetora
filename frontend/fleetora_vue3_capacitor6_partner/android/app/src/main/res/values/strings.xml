@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fleetora Partner</string>
+    <string name="title_activity_main">Fleetora Partner</string>
+    <string name="package_name">com.nextchallenge.tawssil_patenaire</string>
+    <string name="custom_url_scheme">com.nextchallenge.tawssil_patenaire</string>
+</resources>

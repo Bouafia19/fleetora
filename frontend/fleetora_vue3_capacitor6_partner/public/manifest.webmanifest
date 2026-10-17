@@ -1,0 +1,32 @@
+{
+  "name": "Fleetora Partner",
+  "short_name": "Fleetora Partner",
+  "description": "On-Demand Freight Driver & Transporter Dispatch App",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#00366F",
+  "theme_color": "#00366F",
+  "categories": ["business", "logistics", "navigation", "transportation"],
+  "icons": [
+    {
+      "src": "/fleetora-icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/fleetora-icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/fleetora-icon-maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ]
+}

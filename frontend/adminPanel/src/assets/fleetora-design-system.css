@@ -1,0 +1,312 @@
+/* ==========================================================================
+   FLEETORA DESIGN SYSTEM — CORE TOKENS & UTILITIES
+   Color Palette, Spacing Scale, Typography, Components & RTL Support
+   ========================================================================== */
+
+:root {
+  /* Brand Colors */
+  --fl-primary: #00366F;
+  --fl-primary-dark: #002247;
+  --fl-primary-light: #004F9E;
+  --fl-primary-50: #EEF5FC;
+  --fl-primary-100: #D8E7FA;
+  --fl-primary-200: #B0CFF5;
+  
+  /* Supporting Neutral & Slate */
+  --fl-secondary: #0F172A;
+  --fl-secondary-light: #1E293B;
+  --fl-slate-50: #F8FAFC;
+  --fl-slate-100: #F1F5F9;
+  --fl-slate-200: #E2E8F0;
+  --fl-slate-300: #CBD5E1;
+  --fl-slate-400: #94A3B8;
+  --fl-slate-500: #64748B;
+  --fl-slate-600: #475569;
+  --fl-slate-700: #334155;
+  --fl-slate-800: #1E293B;
+  --fl-slate-900: #0F172A;
+
+  /* Accent & Mobility Highlight */
+  --fl-accent: #0EA5E9;
+  --fl-accent-dark: #0284C7;
+  --fl-accent-light: #E0F2FE;
+  --fl-accent-50: #F0F9FF;
+
+  /* Semantic Feedback */
+  --fl-success: #10B981;
+  --fl-success-dark: #059669;
+  --fl-success-light: #D1FAE5;
+  --fl-success-50: #ECFDF5;
+
+  --fl-warning: #F59E0B;
+  --fl-warning-dark: #D97706;
+  --fl-warning-light: #FEF3C7;
+  --fl-warning-50: #FFFBEB;
+
+  --fl-error: #EF4444;
+  --fl-error-dark: #DC2626;
+  --fl-error-light: #FEE2E2;
+  --fl-error-50: #FEF2F2;
+
+  --fl-info: #0284C7;
+  --fl-info-light: #E0F2FE;
+
+  /* Surfaces & Backgrounds */
+  --fl-background: #F8FAFC;
+  --fl-surface: #FFFFFF;
+  --fl-surface-variant: #F1F5F9;
+  --fl-border: #E2E8F0;
+  --fl-border-strong: #CBD5E1;
+  --fl-border-focus: #0EA5E9;
+
+  /* Typography Colors */
+  --fl-text-primary: #0F172A;
+  --fl-text-secondary: #475569;
+  --fl-text-muted: #94A3B8;
+  --fl-text-on-primary: #FFFFFF;
+
+  /* Spacing Scale */
+  --fl-space-1: 4px;
+  --fl-space-2: 8px;
+  --fl-space-3: 12px;
+  --fl-space-4: 16px;
+  --fl-space-5: 20px;
+  --fl-space-6: 24px;
+  --fl-space-8: 32px;
+  --fl-space-10: 40px;
+  --fl-space-12: 48px;
+  --fl-space-16: 64px;
+
+  /* Border Radii */
+  --fl-radius-xs: 4px;
+  --fl-radius-sm: 8px;
+  --fl-radius-md: 12px;
+  --fl-radius-lg: 16px;
+  --fl-radius-xl: 20px;
+  --fl-radius-2xl: 24px;
+  --fl-radius-pill: 9999px;
+
+  /* Elevation & Shadows */
+  --fl-shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --fl-shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --fl-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --fl-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+  --fl-shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+  --fl-shadow-glow: 0 0 15px rgba(0, 54, 111, 0.25);
+
+  /* Transitions */
+  --fl-transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --fl-transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --fl-transition-smooth: 350ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Base resets & typography */
+body, .v-application {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  color: var(--fl-text-primary);
+  background-color: var(--fl-background) !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fleetora Card Styles */
+.fl-card {
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+  border-radius: var(--fl-radius-xl) !important;
+  box-shadow: var(--fl-shadow-sm);
+  transition: box-shadow var(--fl-transition-normal), border-color var(--fl-transition-normal), transform var(--fl-transition-normal);
+}
+
+.fl-card-interactive {
+  cursor: pointer;
+}
+.fl-card-interactive:hover {
+  border-color: var(--fl-accent);
+  box-shadow: var(--fl-shadow-md);
+  transform: translateY(-2px);
+}
+
+/* Glassmorphism Floating Panels */
+.fl-glass {
+  background: rgba(255, 255, 255, 0.94) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(226, 232, 240, 0.9) !important;
+  box-shadow: var(--fl-shadow-lg) !important;
+}
+
+.fl-glass-dark {
+  background: rgba(0, 34, 71, 0.92) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: #FFFFFF !important;
+}
+
+/* Brand Gradients */
+.fl-gradient-primary {
+  background: linear-gradient(135deg, #00366F 0%, #002247 100%) !important;
+  color: #FFFFFF !important;
+}
+
+.fl-gradient-hero {
+  background: linear-gradient(135deg, #00366F 0%, #0D47A1 60%, #0284C7 100%) !important;
+  color: #FFFFFF !important;
+}
+
+.fl-gradient-accent {
+  background: linear-gradient(135deg, #0EA5E9 0%, #0284C7 100%) !important;
+  color: #FFFFFF !important;
+}
+
+/* Status Chips & Badges */
+.fl-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--fl-radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.fl-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.fl-badge-success {
+  background: var(--fl-success-50);
+  color: var(--fl-success-dark);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.fl-badge-success .fl-badge-dot { background: var(--fl-success); }
+
+.fl-badge-warning {
+  background: var(--fl-warning-50);
+  color: var(--fl-warning-dark);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.fl-badge-warning .fl-badge-dot { background: var(--fl-warning); }
+
+.fl-badge-error {
+  background: var(--fl-error-50);
+  color: var(--fl-error-dark);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.fl-badge-error .fl-badge-dot { background: var(--fl-error); }
+
+.fl-badge-info {
+  background: var(--fl-accent-50);
+  color: var(--fl-accent-dark);
+  border: 1px solid rgba(14, 165, 233, 0.2);
+}
+.fl-badge-info .fl-badge-dot { background: var(--fl-accent); }
+
+/* Pulsating Live Indicator */
+.fl-pulse-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--fl-success);
+  box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  animation: flPulse 2s infinite;
+}
+
+@keyframes flPulse {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 8px rgba(16, 185, 129, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+}
+
+/* Empty State Helper */
+.fl-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+}
+
+.fl-empty-state-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--fl-slate-100);
+  color: var(--fl-slate-400);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+/* Touch Friendly Utilities */
+.fl-touch-target {
+  min-height: 48px;
+  min-width: 48px;
+}
+
+/* Primary Brand Buttons */
+.fl-btn-primary {
+  background-color: var(--fl-primary) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  border-radius: var(--fl-radius-lg) !important;
+  letter-spacing: 0.01em !important;
+  box-shadow: var(--fl-shadow-sm) !important;
+  transition: all var(--fl-transition-fast) !important;
+}
+
+.fl-btn-primary:hover {
+  background-color: var(--fl-primary-light) !important;
+  box-shadow: var(--fl-shadow-md) !important;
+  transform: translateY(-1px);
+}
+
+.fl-btn-accent {
+  background-color: var(--fl-accent) !important;
+  color: #FFFFFF !important;
+  font-weight: 600 !important;
+  border-radius: var(--fl-radius-lg) !important;
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  font-family: 'Segoe UI', Tahoma, Arial, sans-serif !important;
+  direction: rtl;
+  text-align: right;
+}
+
+[dir="rtl"] .fl-mirror-rtl {
+  transform: scaleX(-1);
+}
+
+/* Accessibility: Focus visible */
+:focus-visible {
+  outline: 2px solid var(--fl-accent) !important;
+  outline-offset: 2px !important;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
