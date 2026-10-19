@@ -2,6 +2,7 @@ import { createApp, markRaw } from 'vue'
 import axios from 'axios'
 import i18n from './lang'
 import { createPinia } from 'pinia'
+import { Capacitor } from '@capacitor/core'
 
 // Vuetify
 import 'vuetify/styles'
@@ -85,16 +86,20 @@ const vuetify = createVuetify({
 })
 
 // Configure Axios with dynamic base URL
+const PROD_API_URL = 'https://fleetora-api-93an.onrender.com'
+
 let apiBase = import.meta.env.VITE_API_URL || 
-  (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
-    ? 'http://localhost:4000' 
-    : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000'))
+  (Capacitor.isNativePlatform()
+    ? PROD_API_URL
+    : (typeof window !== 'undefined' && (window.location.port === '5175' || window.location.port === '7072')
+        ? 'http://localhost:4000' 
+        : PROD_API_URL))
 
 if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
   apiBase = `https://${apiBase}`
 }
 
-axios.defaults.baseURL = apiBase
+axios.defaults.baseURL = apiBase.endsWith('/') ? apiBase : `${apiBase}/`
 
 const app = createApp(App)
 const pinia = createPinia()

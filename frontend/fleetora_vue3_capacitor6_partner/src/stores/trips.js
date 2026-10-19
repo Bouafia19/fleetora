@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 import { Preferences } from '@capacitor/preferences'
+import { Capacitor } from '@capacitor/core'
 import io from "socket.io-client"
 import { useAuthStore } from './auth'
 
@@ -60,10 +61,13 @@ export const useTripsStore = defineStore('trips', {
             const auth = useAuthStore()
 
             return new Promise((resolve, reject) => {
+                const PROD_API_URL = 'https://fleetora-api-93an.onrender.com'
                 let backendUrl = import.meta.env.VITE_API_URL || 
-                    (typeof window !== 'undefined' && (window.location.port === '7072' || window.location.port === '5173') 
-                        ? 'http://localhost:4000' 
-                        : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000'))
+                    (Capacitor.isNativePlatform()
+                        ? PROD_API_URL
+                        : (typeof window !== 'undefined' && (window.location.port === '5176' || window.location.port === '7072') 
+                            ? 'http://localhost:4000' 
+                            : PROD_API_URL))
                 
                 if (backendUrl && !backendUrl.startsWith('http://') && !backendUrl.startsWith('https://')) {
                     backendUrl = `https://${backendUrl}`
