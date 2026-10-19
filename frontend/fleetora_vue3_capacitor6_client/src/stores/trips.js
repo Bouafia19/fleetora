@@ -105,10 +105,14 @@ export const useTripsStore = defineStore('trips', {
         
         let transporters = params.response.data
         
-        const backendUrl = import.meta.env.VITE_API_URL || 
+        let backendUrl = import.meta.env.VITE_API_URL || 
             (typeof window !== 'undefined' && (window.location.port === '7072' || window.location.port === '5173') 
-                ? 'http://localhost:3000' 
-                : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000'))
+                ? 'http://localhost:4000' 
+                : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000'))
+        
+        if (backendUrl && !backendUrl.startsWith('http://') && !backendUrl.startsWith('https://')) {
+            backendUrl = `https://${backendUrl}`
+        }
         
         let socket = io(backendUrl, {
             path: "/socket.io/"

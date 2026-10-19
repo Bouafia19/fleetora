@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     port: 2026,
   },
-  base: '/admin/',
+  base: process.env.VITE_BASE_PATH || '/',
   build: {
     outDir: 'dist',
     rollupOptions: {

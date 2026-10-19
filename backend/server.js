@@ -6,6 +6,7 @@ const helmet = require('helmet')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
 const http = require('http')
+const path = require('path')
 const { Server } = require('socket.io')
 
 // Firebase Admin initialization via safe module
@@ -64,7 +65,7 @@ app.use(cors({
 // Request body parsing
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true, limit: '50mb' }))
-app.use(express.static('./public'))
+app.use(express.static(path.join(__dirname, 'public')))
 
 // Socket.io initialization
 const io = new Server(server, {
@@ -114,8 +115,8 @@ app.use((req, res, next) => {
     next()
 })
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// Health check endpoint (accessible at /health and /api/health)
+const healthHandler = (req, res) => {
     res.status(200).json({
         service: 'Fleetora API',
         status: 'UP',
@@ -123,7 +124,9 @@ app.get('/health', (req, res) => {
         dbState: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
         timestamp: new Date().toISOString()
     })
-})
+}
+app.get('/health', healthHandler)
+app.get('/api/health', healthHandler)
 
 // Routes (supports both /api/* and /* for reverse proxy compatibility)
 const mountRoutes = (prefix = '') => {
@@ -163,8 +166,9 @@ if (require.main === module) {
     mongoose.set('strictQuery', true)
     mongoose.connect(MONGO_URI)
         .then(() => {
-            console.log('[Fleetora DB] Connected to database:', MONGO_URI)
-            server.listen(PORT, () => {
+            const sanitizedUri = MONGO_URI.replace(/\/\/([^:]+):([^@]+)@/, '//$1:***@')
+            console.log('[Fleetora DB] Connected to database:', sanitizedUri)
+            server.listen(PORT, '0.0.0.0', () => {
                 console.log(`[Fleetora API] Listening on port ${PORT}`)
             })
         })

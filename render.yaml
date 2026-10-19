@@ -1,0 +1,99 @@
+services:
+  # Fleetora Backend Express 5 + Socket.io API
+  - type: web
+    name: fleetora-api
+    runtime: node
+    plan: free
+    region: frankfurt
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        sync: false
+      - key: SECRET
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: "*"
+
+  # Fleetora Customer Web Application
+  - type: web
+    name: fleetora-web
+    runtime: static
+    rootDir: frontend/fleetora_web_vue3
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: fleetora-api
+          property: host
+
+  # Fleetora Admin Operations Dashboard
+  - type: web
+    name: fleetora-admin
+    runtime: static
+    rootDir: frontend/adminPanel
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: fleetora-api
+          property: host
+      - key: VITE_BASE_PATH
+        value: /
+
+  # Fleetora Partner / Transporter Portal
+  - type: web
+    name: fleetora-partner
+    runtime: static
+    rootDir: frontend/fleetora_vue3_capacitor6_partner
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: fleetora-api
+          property: host
+
+  # Fleetora Customer Mobile Web / PWA App
+  - type: web
+    name: fleetora-client
+    runtime: static
+    rootDir: frontend/fleetora_vue3_capacitor6_client
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    autoDeploy: true
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: fleetora-api
+          property: host

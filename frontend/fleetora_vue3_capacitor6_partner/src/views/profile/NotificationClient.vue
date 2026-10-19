@@ -304,10 +304,13 @@
         expired.value = true
       }
 
-      const backendUrl = import.meta.env.VITE_API_URL || 
+      let backendUrl = import.meta.env.VITE_API_URL || 
         (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
           ? 'http://localhost:4000' 
           : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000'))
+      if (backendUrl && !backendUrl.startsWith('http://') && !backendUrl.startsWith('https://')) {
+        backendUrl = `https://${backendUrl}`
+      }
       socket.value = io(backendUrl, {
         path: "/socket.io/"
       })

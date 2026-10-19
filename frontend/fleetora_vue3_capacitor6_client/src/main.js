@@ -85,10 +85,14 @@ const vuetify = createVuetify({
 })
 
 // Configure Axios with dynamic base URL
-const apiBase = import.meta.env.VITE_API_URL || 
+let apiBase = import.meta.env.VITE_API_URL || 
   (typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
     ? 'http://localhost:4000' 
     : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000'))
+
+if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+  apiBase = `https://${apiBase}`
+}
 
 axios.defaults.baseURL = apiBase
 

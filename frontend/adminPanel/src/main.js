@@ -87,7 +87,10 @@ const vuetify = createVuetify({
 })
 
 // Dynamic API Base URL with fallback
-const apiBase = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/'
+let apiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/'
+if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
+  apiBase = `https://${apiBase}`
+}
 axios.defaults.baseURL = apiBase.endsWith('/') ? apiBase : `${apiBase}/`
 
 const app = createApp(App)
