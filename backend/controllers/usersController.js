@@ -15,7 +15,7 @@ if (process.env.ACCOUNT_SID && process.env.AUTH_TOKEN && process.env.ACCOUNT_SID
 }
 
 const createToken = (_id) => {
-    return jwt.sign({_id}, process.env.SECRET || 'fleetora_secret_jwt_fallback')
+    return jwt.sign({_id}, process.env.SECRET || 'fleetora_secret_jwt_fallback', { expiresIn: '7d' })
 }
 
 // login user via web

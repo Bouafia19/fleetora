@@ -159,15 +159,11 @@ UserSchema.statics.loginPhone = async function( phone, password, role) {
   }else if (phone.length === 13){
     phoneWith0 = phone.slice(0, 4) + '0' + phone.slice(4)
   }
-  console.log('phone', phone)
-  console.log('phoneWith0', phoneWith0)
   let user = null
   let user0 = null
   if(role === 'client'){
     user = await this.findOne({ phone: phone, role: 'client', activated: true })
     user0 = await this.findOne({ phone: phoneWith0, role: 'client', activated: true })
-    console.log('user', user)
-    console.log('user0', user0)
   }else if(role === 'transporter'){
     user = await this.findOne({ phone: phone, role: 'transporter', activated: true })
     user0 = await this.findOne({ phone: phoneWith0, role: 'transporter', activated: true })
@@ -178,21 +174,17 @@ UserSchema.statics.loginPhone = async function( phone, password, role) {
   }
   if(user){
     const match = await bcrypt.compare(password, user.password)
-    console.log('match', match)
     if(!match){
       throw Error('ipass')
     }else{
-      console.log('return user', user)
       return user
     }
     
   }else if(user0){
     const match0 = await bcrypt.compare(password, user0.password)
-    console.log('match0', match0)
     if(!match0){
       throw Error('ipass')
     }else{
-      console.log('return user0', user0)
       return user0
     }
     
