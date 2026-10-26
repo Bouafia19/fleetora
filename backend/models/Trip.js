@@ -89,4 +89,11 @@ const TripSchema = new mongoose.Schema({
   timestamps: true
 })
 
+// Database indexes for high-frequency trip queries
+TripSchema.index({ clientId: 1, createdAt: -1 })
+TripSchema.index({ transporterId: 1, finished: 1, paid: 1 })
+TripSchema.index({ vehicleId: 1, start: 1, finished: 1 })
+TripSchema.index({ status: 1 })
+TripSchema.index({ createdAt: -1 })
+
 module.exports = mongoose.model('Trip', TripSchema)

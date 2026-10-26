@@ -38,4 +38,9 @@ const BillingSchema = new mongoose.Schema({
     timestamps: true
 })
 
+// Database indexes for high-frequency billing queries
+BillingSchema.index({ transporterId: 1, createdAt: -1 })
+BillingSchema.index({ status: 1 })
+BillingSchema.index({ createdAt: -1 })
+
 module.exports = mongoose.model('Billing', BillingSchema)

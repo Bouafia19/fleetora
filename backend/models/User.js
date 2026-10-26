@@ -28,7 +28,8 @@ const UserSchema = new mongoose.Schema({
     enum: ['administrator', 'client', 'transporter']
   },
   activated: {
-    type: Boolean
+    type: Boolean,
+    default: false
   },
   grayCard: {
     type: String
@@ -46,7 +47,8 @@ const UserSchema = new mongoose.Schema({
     type: String
   },
   complete: {
-    type: Boolean
+    type: Boolean,
+    default: false
   },
   avatar: {
     type: String
@@ -73,7 +75,8 @@ const UserSchema = new mongoose.Schema({
     type: String
   },
   status: {
-    type: Boolean
+    type: Boolean,
+    default: true
   },
   authorizationIds: [{
     type: Schema.Types.ObjectId,
@@ -91,6 +94,12 @@ const UserSchema = new mongoose.Schema({
 {
   timestamps: true
 })
+
+// Database indexes for high-frequency queries and performance
+UserSchema.index({ phone: 1, role: 1 })
+UserSchema.index({ email: 1, role: 1 })
+UserSchema.index({ role: 1, status: 1 })
+UserSchema.index({ vehicleId: 1, role: 1, status: 1 })
 
 // static signup method
 UserSchema.statics.signup = async function( 
@@ -116,9 +125,6 @@ UserSchema.statics.signup = async function(
   if(!validator.isEmail(email)){
     throw Error('email is not valid')
   }
-  // if(!validator.isStrongPassword(password)){
-  //   throw Error('password not strong enough')
-  // }
   
   const exists = await this.findOne({ email, role })
   
@@ -187,7 +193,6 @@ UserSchema.statics.loginPhone = async function( phone, password, role) {
     }else{
       return user0
     }
-    
   }
 }
 
@@ -207,10 +212,13 @@ UserSchema.statics.loginEmail = async function( email, password ) {
   return user
 }
 
-// static loginPhoneWeb method
-UserSchema.statics.loginPhoneWeb = async function( phone, role ) {
+// static loginPhoneWeb method - secured to require password validation
+UserSchema.statics.loginPhoneWeb = async function( phone, role, password ) {
   if(!phone){
     throw Error('Phone field must be filled')
+  }
+  if(!password){
+    throw Error('Password field must be filled')
   }
 
   let phoneWith0
@@ -219,27 +227,44 @@ UserSchema.statics.loginPhoneWeb = async function( phone, role ) {
   }else if (phone.length === 13){
     phoneWith0 = phone.slice(0, 4) + '0' + phone.slice(4)
   }
-  let user
-  let user0
-  user = await this.findOne({ phone, role: role })
-  user0 = await this.findOne({ phoneWith0, role: role })
-
-  if(user){
-    return user
-  }else if(user0){
-    return user0
+  let user = await this.findOne({ phone, role: role })
+  if (!user && phoneWith0) {
+    user = await this.findOne({ phone: phoneWith0, role: role })
   }
+
+  if(!user){
+    throw Error('User not found')
+  }
+
+  const match = await bcrypt.compare(password, user.password)
+  if(!match){
+    throw Error('Invalid credentials')
+  }
+
+  return user
 }
 
 // static signup web method
-UserSchema.statics.signupWeb = async function( phone, role, email, firstName, lastName, activated ) {
-
-  // validation
+UserSchema.statics.signupWeb = async function( phone, role, email, firstName, lastName, activated, password ) {
   if(!phone){
     throw Error('Phone field must be filled')
   }
- 
-  const user = await this.create({ phone, role, email, firstName, lastName, activated })
+  if(!password){
+    throw Error('Password field must be filled')
+  }
+
+  const salt = await bcrypt.genSalt(10)
+  const hashedPassword = await bcrypt.hash(password, salt)
+
+  const user = await this.create({
+    phone,
+    role: role || 'client',
+    email,
+    firstName,
+    lastName,
+    activated: activated !== undefined ? activated : true,
+    password: hashedPassword
+  })
 
   return user
 }

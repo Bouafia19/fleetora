@@ -41,4 +41,9 @@ const AnnouncementSchema = new mongoose.Schema({
     timestamps: true
 })
 
+// Database indexes and TTL cleanup for temporary push notifications/trip requests
+AnnouncementSchema.index({ topic: 1 })
+AnnouncementSchema.index({ 'data.transporterId': 1 })
+AnnouncementSchema.index({ createdAt: 1 })
+
 module.exports = mongoose.model('Announcement', AnnouncementSchema)
