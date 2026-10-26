@@ -222,6 +222,12 @@ const PORT = process.env.PORT || 4000
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/fleetora'
 
 if (require.main === module) {
+    if (process.env.NODE_ENV === 'production') {
+        if (!process.env.SECRET || process.env.SECRET.length < 32 || process.env.SECRET.includes('default_secret')) {
+            console.error('[FATAL] Production startup aborted: SECRET environment variable must be set to a cryptographically secure key of at least 32 characters.')
+            process.exit(1)
+        }
+    }
     mongoose.set('strictQuery', true)
     mongoose.connect(MONGO_URI)
         .then(() => {
