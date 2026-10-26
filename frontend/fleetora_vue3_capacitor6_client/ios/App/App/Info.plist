@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Fleetora</string>
+	<string>Fleetora</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,15 +23,15 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string></string>
+	<string>Fleetora uses your location to keep delivery tracking accurate while the app is active.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Fleetora needs your location to display nearby drivers and track delivery pickups in real time.</string>
 	<key>NSCameraUsageDescription</key>
-	<string></string>
+	<string>Fleetora requires camera access to scan cargo receipts and upload parcel photos.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string></string>
+	<string>Fleetora needs permission to save delivery invoices and trip receipts to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string></string>
+	<string>Fleetora requires photo library access to upload package images and profile pictures.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

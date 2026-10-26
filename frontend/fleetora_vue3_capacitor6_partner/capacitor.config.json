@@ -3,7 +3,6 @@
   "appName": "Fleetora Partner",
   "webDir": "dist",
   "server": {
-    "androidScheme": "http",
-    "cleartext": true
+    "androidScheme": "https"
   }
 }

@@ -1,4 +1,4 @@
-package com.nextchallenge.tawssil;
+package com.fleetora.client;
 
 import com.getcapacitor.BridgeActivity;
 

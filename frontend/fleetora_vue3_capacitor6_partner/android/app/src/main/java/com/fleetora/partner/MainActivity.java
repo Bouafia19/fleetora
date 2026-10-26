@@ -1,4 +1,4 @@
-package com.nextchallenge.tawssil_patenaire;
+package com.fleetora.partner;
 
 import com.getcapacitor.BridgeActivity;
 

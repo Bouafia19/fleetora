@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Fleetora Partner</string>
+	<string>Fleetora Partner</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -23,15 +23,15 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string></string>
+	<string>Fleetora Partner requires background location access to provide accurate real-time GPS tracking to clients during active trips.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string>Fleetora Partner requires your location to assign nearby freight jobs and navigate to customer pickup and drop-off points.</string>
 	<key>NSCameraUsageDescription</key>
-	<string></string>
+	<string>Fleetora Partner requires camera access to take verification photos of transport documents and cargo upon loading.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
-	<string></string>
+	<string>Fleetora Partner needs permission to save billing statements and receipts to your photo library.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string></string>
+	<string>Fleetora Partner requires photo library access to upload transport license documents and proof of delivery.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
