@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const requireAuth = require('../middleware/requireAuth')
+const requireRole = require('../middleware/requireRole')
 
 // controller functions
 const { 
@@ -15,20 +16,19 @@ const {
 // require auth for all routes
 router.use(requireAuth)
 
-// GET all vehicles
+// GET all vehicles (all authenticated roles)
 router.get('/', getVehicles)
 
-// GET a single vehicle
+// GET a single vehicle (all authenticated roles)
 router.get('/:id', getVehicle)
   
-// POST a new vehicle
-router.post('/', createVehicle)
+// POST a new vehicle (admin only)
+router.post('/', requireRole('administrator'), createVehicle)
 
-// DELETE a vehicle
-router.delete('/:id', deleteVehicle)
+// DELETE a vehicle (admin only)
+router.delete('/:id', requireRole('administrator'), deleteVehicle)
 
-// UPDATE a vehicle
-router.patch('/:id', updateVehicle)
-
+// UPDATE a vehicle (admin only)
+router.patch('/:id', requireRole('administrator'), updateVehicle)
 
 module.exports = router

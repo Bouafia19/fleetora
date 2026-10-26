@@ -232,10 +232,11 @@
         channel: 'sms',
         role: 'client' 
       })
+      router.push({ path: '/login', query: { phone: phoneNumber.value } })
     } catch (error) {
       err.value = error.response?.data?.error || error.message
       if (err.value === 'paiu') {
-        logIn()
+        router.push({ path: '/login', query: { phone: phoneNumber.value } })
       }
     } finally {
       loading.value = false

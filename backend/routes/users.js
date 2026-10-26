@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const requireAuth = require('../middleware/requireAuth')
+const requireRole = require('../middleware/requireRole')
 
 // controller functions
 const { 
@@ -22,10 +23,11 @@ const {
     uploadPartnerImages,
     loadPartnerPhotos } = require('../controllers/usersController')
 
-// login via web route
+// Public routes
+// login via web route (enforces password)
 router.post('/loginWeb', loginUserWeb)
 
-// signup via Web route
+// signup via Web route (enforces client role)
 router.post('/signupUserWeb', signupUserWeb)
 
 // login route
@@ -43,32 +45,31 @@ router.post('/verifyPhone', verifyPhone)
 // verify user
 router.post('/verifyUser', verifyUser)
 
-// update existing user
-router.patch('/update_existing_user/:id', update_existing_user)
-
-// require auth for all routes
+// require auth for all subsequent routes
 router.use(requireAuth)
 
-// GET all users
-router.get('/', getUsers)
+// update existing user (protected & ownership-validated)
+router.patch('/update_existing_user/:id', update_existing_user)
 
-// GET a single user
+// GET all users (admin only)
+router.get('/', requireRole('administrator'), getUsers)
+
+// GET a single user (owner or admin)
 router.get('/:id', getUser)
   
-// POST a new user
-router.post('/', createUser)
+// POST a new user (admin only)
+router.post('/', requireRole('administrator'), createUser)
 
-// DELETE a user
-router.delete('/:id', deleteUser)
+// DELETE a user (admin only)
+router.delete('/:id', requireRole('administrator'), deleteUser)
 
 // UPDATE a user
 router.patch('/:id', updateUser)
 
-// upload partner images
+// upload partner images (owner or admin)
 router.patch('/uploadPartnerImages/:id', uploadPartnerImages)
 
-// GET load Partner Photos
+// GET load Partner Photos (owner or admin)
 router.get('/loadPartnerPhotos/:id', loadPartnerPhotos)
-
 
 module.exports = router

@@ -146,16 +146,26 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const route = useRoute()
 
 const phoneNumber = ref('0550000003'),
       err = ref(''),
       password = ref('client123456'),
       show = ref(false),
       loading = ref(false)
+
+onMounted(() => {
+  if (route.query.phone) {
+    let p = String(route.query.phone)
+    if (p.startsWith('+213')) p = p.slice(4)
+    phoneNumber.value = p
+  }
+})
 
 const logIn = async () => {
   try {

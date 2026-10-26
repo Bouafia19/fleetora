@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const requireAuth = require('../middleware/requireAuth')
+const requireRole = require('../middleware/requireRole')
 
 // controller functions
 const { 
@@ -14,16 +15,16 @@ const {
 // require auth for all routes
 router.use(requireAuth)
 
-// topics
-router.post('/topics', sendToTopics)
+// topics (admin only broadcast)
+router.post('/topics', requireRole('administrator'), sendToTopics)
 
-// Multiple tokens
-router.post('/tokens', sendToTokens)
+// Multiple tokens (admin only broadcast)
+router.post('/tokens', requireRole('administrator'), sendToTokens)
   
-// One token
+// One token (for direct dispatch notifications)
 router.post('/token', sendToToken)
 
-// Subscribe
-router.post('/token', subscribe)
+// Subscribe to FCM topic (fixed route collision FLT-ARC-004)
+router.post('/subscribe', subscribe)
 
 module.exports = router

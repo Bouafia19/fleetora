@@ -18,11 +18,14 @@ const createToken = (_id) => {
     return jwt.sign({_id}, process.env.SECRET || 'fleetora_secret_jwt_fallback', { expiresIn: '7d' })
 }
 
-// login user via web
+// login user via web - strictly requires and validates password
 const loginUserWeb = async (req, res) => {
     try {
-        const { phone, role } = req.body
-        const item = await User.loginPhoneWeb(phone, role)
+        const { phone, password, role } = req.body
+        if (!phone || !password) {
+            return res.status(400).json({ error: 'Phone and password are required' })
+        }
+        const item = await User.loginPhone(phone, password, role || 'client')
         // create token
         const token = createToken(item._id)
         let user = {
@@ -34,17 +37,37 @@ const loginUserWeb = async (req, res) => {
             phone: item.phone,
             role: item.role,
         }
-        res.status(200).json({ user, token})
+        res.status(200).json({ user, token })
     } catch (error) {
-        res.status(400).json({error: error.message})
+        res.status(400).json({ error: error.message })
     }
 }
 
-// signup user via web
+// signup user via web - restricted to client role with mandatory password
 const signupUserWeb = async (req, res) => {
-    const { phone, role, email, firstName, lastName,  activated } = req.body
+    const { phone, password, email, firstName, lastName } = req.body
     try {
-        const item = await User.signupWeb( phone, role, email, firstName, lastName,  activated)
+        if (!phone || !password) {
+            return res.status(400).json({ error: 'Phone and password are required' })
+        }
+        // Strict role restriction: web signup is only permitted for clients
+        const role = 'client'
+        const item = await User.signup(
+            email || `${phone.replace(/[^0-9]/g, '')}@fleetora.local`,
+            firstName || 'Client',
+            lastName || 'User',
+            phone,
+            password,
+            role,
+            '', // fcmToken
+            '', // codePartenaire
+            '', // code
+            true, // activated
+            true, // complete
+            true, // status
+            'created', // fileStatus
+            true // legal
+        )
         // create token
         const token = createToken(item._id)
 
@@ -58,9 +81,9 @@ const signupUserWeb = async (req, res) => {
             role: item.role,
         }
         
-        res.status(200).json({ user, token})
+        res.status(200).json({ user, token })
     } catch (error) {
-        res.status(400).json({error: error.message})
+        res.status(400).json({ error: error.message })
     }
 }
 
@@ -162,6 +185,12 @@ const signupUser = async (req, res) => {
         fileStatus,
         legal
     } = req.body
+
+    // Prevent privilege escalation: administrator accounts cannot be self-registered
+    if (role === 'administrator') {
+        return res.status(403).json({ error: 'Administrator accounts cannot be created via public signup' })
+    }
+
     try {
         const item = await User.signup(
             email, 
@@ -313,18 +342,30 @@ const verifyCode = async (req, res) => {
     }
 }
 
-// GET all users
+// GET all users (admin only, projects out heavy Base64 image fields for performance)
 const getUsers = async (req, res) => {
-    const users = await User.find().sort({ createdAt: -1}).populate("vehicleId").populate("authorizationIds")
+    if (req.user && req.user.role !== 'administrator') {
+        return res.status(403).json({ error: 'Access denied: Administrator privileges required' })
+    }
+    const users = await User.find()
+        .select('-grayCard -commercialRegister -transportCard -trafficPermit -id')
+        .sort({ createdAt: -1 })
+        .populate("vehicleId")
+        .populate("authorizationIds")
     res.status(200).json(users)
 }
 
-// GET a single user
+// GET a single user (owner or admin only)
 const getUser = async (req, res) => {
     const {id} = req.params
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(404).json({error: 'no such user'})
     }
+
+    if (req.user && req.user._id.toString() !== id && req.user.role !== 'administrator') {
+        return res.status(403).json({ error: 'Access denied: You can only view your own user profile' })
+    }
+
     const item = await User.findById(id)
     
     if(!item){
@@ -358,21 +399,23 @@ const getUser = async (req, res) => {
             legal: item.legal
         }
         res.status(200).json(user)
+    } else {
+        res.status(200).json(item)
     }
-
 }
 
-// POST a new user
+// POST a new user (admin only)
 const createUser = async (req, res) => {
+    if (req.user && req.user.role !== 'administrator') {
+        return res.status(403).json({ error: 'Access denied: Administrator privileges required' })
+    }
     const { 
         password,
-        
     } = req.body
     
     try {
         const salt = await bcrypt.genSalt(10)
         const hash = await bcrypt.hash(password, salt)
-        // add doc to db
         const user = await User.create({ 
             ...req.body,
             password: hash
@@ -382,8 +425,12 @@ const createUser = async (req, res) => {
         res.status(400).json({ error: error.message })
     }
 }
-// DELETE a user
+
+// DELETE a user (admin only)
 const deleteUser = async (req, res) => {
+    if (req.user && req.user.role !== 'administrator') {
+        return res.status(403).json({ error: 'Access denied: Administrator privileges required' })
+    }
     const {id} = req.params
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(404).json({error: 'no such user'})
@@ -397,19 +444,33 @@ const deleteUser = async (req, res) => {
     res.status(200).json(user)
 }
 
-// UPDATE a user
+// UPDATE a user (owner or admin only, with strict field allowlist)
 const updateUser = async (req, res) => {
     const {id} = req.params
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(404).json({error: 'no such user'})
     }
+
+    if (req.user && req.user._id.toString() !== id && req.user.role !== 'administrator') {
+        return res.status(403).json({ error: 'Access denied: You can only update your own user profile' })
+    }
+
+    const allowedFields = ['firstName', 'lastName', 'language', 'phone']
+    if (req.user && req.user.role === 'administrator') {
+        allowedFields.push('activated', 'complete', 'status', 'fileStatus', 'legal', 'vehicleId', 'codePartenaire')
+    }
+
+    const updates = {}
+    for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+            updates[field] = req.body[field]
+        }
+    }
     
-    const user = await User.findOneAndUpdate({_id: id},{
-        ...req.body
-    },
+    const user = await User.findOneAndUpdate({_id: id}, updates,
     {
         new: true
-    }).select('email firstName lastName language phone role complete status fileStatus legal')
+    }).select('email firstName lastName language phone role complete status fileStatus legal vehicleId')
     
     if(!user){
         return res.status(404).json({error: 'no such user'})
@@ -418,24 +479,41 @@ const updateUser = async (req, res) => {
     res.status(200).json(user)
 }
 
-// update existing user
+// update existing user (owner or admin, strict field validation, mass-assignment blocked)
 const update_existing_user = async (req, res) => {
     const { id } = req.params
-    // let { password } = req.body
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(404).json({error: 'no such user'})
     }
-    
-    if(req.body.password){
-        const salt = await bcrypt.genSalt(10)
-        const hash = await bcrypt.hash(req.body.password, salt)
 
-        req.body.password = hash
+    if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' })
+    }
+
+    if (req.user._id.toString() !== id && req.user.role !== 'administrator') {
+        return res.status(403).json({ error: 'Access denied: You can only update your own account' })
+    }
+
+    const allowedFields = ['firstName', 'lastName', 'language', 'phone']
+    if (req.user.role === 'administrator') {
+        allowedFields.push('activated', 'complete', 'status', 'fileStatus', 'legal', 'vehicleId', 'codePartenaire', 'authorizationIds')
+    }
+
+    const updates = {}
+    for (const field of allowedFields) {
+        if (req.body[field] !== undefined) {
+            updates[field] = req.body[field]
+        }
+    }
+
+    // Only administrators can modify passwords directly through this endpoint
+    if (req.body.password && req.user.role === 'administrator') {
+        const salt = await bcrypt.genSalt(10)
+        updates.password = await bcrypt.hash(req.body.password, salt)
     }
     
-    const user = await User.findOneAndUpdate({_id: id},{
-        ...req.body
-    })
+    const user = await User.findOneAndUpdate({_id: id}, updates, { new: true })
+        .select('email firstName lastName language phone role complete status fileStatus legal')
 
     if(!user){
         return res.status(404).json({error: 'no such user'})
@@ -444,18 +522,31 @@ const update_existing_user = async (req, res) => {
     res.status(200).json(user)
 }
 
-// upload images
+// upload partner images (owner or admin only, with document field validation)
 const uploadPartnerImages = async (req, res) => {
-
     const { id } = req.params
     
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(404).json({error: 'no such user'})
     }
+
+    if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' })
+    }
+
+    if (req.user._id.toString() !== id && req.user.role !== 'administrator') {
+        return res.status(403).json({ error: 'Access denied: You can only upload documents for your own account' })
+    }
+
+    const allowedDocFields = ['grayCard', 'commercialRegister', 'transportCard', 'trafficPermit', 'id', 'avatar']
+    const updates = {}
+    for (const field of allowedDocFields) {
+        if (req.body[field] !== undefined) {
+            updates[field] = req.body[field]
+        }
+    }
    
-    const user = await User.findOneAndUpdate({_id: id},{
-        ...req.body
-    }).select('_id')
+    const user = await User.findOneAndUpdate({_id: id}, updates, { new: true }).select('_id fileStatus')
     
     if(!user){
         return res.status(404).json({error: 'no such user'})
@@ -464,12 +555,21 @@ const uploadPartnerImages = async (req, res) => {
     res.status(200).json(user)
 }
 
-// GET partner photos
+// GET partner photos (owner or admin only - IDOR prevention)
 const loadPartnerPhotos = async (req, res) => {
     const {id} = req.params
     if(!mongoose.Types.ObjectId.isValid(id)){
         return res.status(404).json({error: 'no such user'})
     }
+
+    if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' })
+    }
+
+    if (req.user._id.toString() !== id && req.user.role !== 'administrator') {
+        return res.status(403).json({ error: 'Access denied: You can only access your own documents' })
+    }
+
     const images = await User.findById(id).select('grayCard commercialRegister transportCard trafficPermit id')
     
     if(!images){

@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', {
             return state.auth_login && state.user
         },
 
-        geyUser: (state) => {
+        getUser: (state) => {
             return state.user
         }
     },
@@ -25,14 +25,7 @@ export const useAuthStore = defineStore('auth', {
         async account_verify_phone (params) {
             const response = await axios.post("api/users/verifyPhone", params)
             if(response.status === 200){
-                this.account_sign_up({  
-                    phone: params.phonenumber,
-                    role: 'client',
-                    firstName: 'guest',
-                    lastName: 'guest',
-                    email: 'guest@gmail.com',
-                    activated: true
-                })
+                return response.data
             } else {
                 throw new Error('could not complete verification')
             }
@@ -42,34 +35,28 @@ export const useAuthStore = defineStore('auth', {
         async account_verify_code (params) {
             const response = await axios.post("api/users/verifyCode", params)
             if(response){
-                this.account_sign_up({  
-                    phone: params.phonenumber,
-                    role: 'client',
-                    firstName: 'guest',
-                    lastName: 'guest',
-                    email: 'guest@gmail.com',
-                    activated: true
-                })
+                return response.data
             } else {
                 throw new Error('could not complete verification')
             }
         },
 
-        // login to user account 
+        // login to user account (requires password)
         async account_sign_in (params) {
-            console.log('params', params)
             try {
-                const response = await axios.post("api/users/loginWeb", params)
-                if(response.status === 200){
-                    this.user = response.data
+                const response = await axios.post("api/users/login", params)
+                if(response.status === 200 && response.data.token){
+                    this.user = response.data.user
+                    this.token = response.data.token
                     this.auth_login = true
                     localStorage.setItem('userInfo', JSON.stringify(response.data))
-                    
                     this.router.push({ name: 'Map' })  
-                    
+                } else {
+                    throw new Error('Login failed: invalid response')
                 }
             } catch (error) {
-                throw new Error(`${error}`)
+                const msg = error.response?.data?.error || error.message || 'Authentication error'
+                throw new Error(msg)
             }
         },
 
