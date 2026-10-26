@@ -3,6 +3,7 @@ const express = require('express')
 const router = express.Router()
 
 const requireAuth = require('../middleware/requireAuth')
+const requireRole = require('../middleware/requireRole')
 
 // controller functions
 const { 
@@ -20,38 +21,26 @@ const {
 // require auth for all routes
 router.use(requireAuth)
 
-// GET all trips
+// Specific parameter-free and subpath GET routes first to avoid route collisions
 router.get('/', getTrips)
-
-// GET a single trip
-router.get('/:id', getOneTrip)
-
-// PATCH a single trip query
-router.patch('/:id', getTrip)
-  
-// POST a new trip
-router.post('/', createTrip)
-
-// DELETE a trip
-router.delete('/:id', deleteTrip)
-
-// POST a new trip
-router.post('/confirmeTrip', confirmeTrip)
-
-// GET a single trip
 router.get('/getOneTrip/:id', getOneTrip)
-
-// UPDATE a trip
-router.patch('/updateTrip/:id', updateTrip)
-
-// GET a trips by vehicleId
+router.get('/user/:id', getTrip)
 router.get('/getTripsByVehicleId/:vehicleId', getTripsByVehicleId)
-
-// Update Annulation Of Trip
-router.patch('/updateAnnulationOfTrip/:id', updateAnnulationOfTrip)
-
-// GET a trips by vehicleId
 router.get('/getTripsByTransporterId/:id', getTripsByTransporterId)
 
+// Single trip GET
+router.get('/:id', getOneTrip)
+
+// POST routes
+router.post('/', createTrip)
+router.post('/confirmeTrip', confirmeTrip)
+
+// UPDATE routes (support legacy PATCH /:id for user trip history)
+router.patch('/updateTrip/:id', updateTrip)
+router.patch('/updateAnnulationOfTrip/:id', updateAnnulationOfTrip)
+router.patch('/:id', getTrip)
+
+// DELETE a trip (Admin only)
+router.delete('/:id', requireRole('administrator'), deleteTrip)
 
 module.exports = router
