@@ -13,11 +13,11 @@ services:
       PORT: 4000
       NODE_ENV: production
       MONGO_URI: mongodb://mongo_db:27017/fleetora
-      SECRET: fleetora_production_secret_key_2026_secured
+      SECRET: ${SECRET:-fleetora_production_secret_key_2026_secured}
       ACCOUNT_SID: ${ACCOUNT_SID:-AC_mock_twilio_account_sid_fleetora}
       AUTH_TOKEN: ${AUTH_TOKEN:-mock_twilio_auth_token_fleetora}
       SERVICE_ID: ${SERVICE_ID:-mock_twilio_service_id_fleetora}
-      CORS_ORIGINS: "*"
+      CORS_ORIGINS: "http://localhost:3000,http://localhost:5173,http://localhost:8080,https://fleetora.com.dz"
     depends_on:
       - mongo_db
     restart: unless-stopped
