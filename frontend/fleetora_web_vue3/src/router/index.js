@@ -85,17 +85,24 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     const auth = useAuthStore()
-    const ls = JSON.parse(localStorage.getItem('userInfo'))
-    if (ls) {
+    let ls = null
+    try {
+      ls = JSON.parse(localStorage.getItem('userInfo'))
+    } catch (e) {
+      ls = null
+    }
+    if (ls && ls.token) {
       auth.attempt(ls.token).then((value) => {
-        if (value === false && to.name != 'Signup' && to.name != 'Login') {
-          next({ name: "Signup" })
+        if (value === false && to.name !== 'Login' && to.name !== 'Signup') {
+          next({ name: "Login" })
         } else {
           next()
         }
+      }).catch(() => {
+        next({ name: "Login" })
       })
     } else {
-      next({ name: "Signup" })
+      next({ name: "Login" })
     }
   } else {
     next()

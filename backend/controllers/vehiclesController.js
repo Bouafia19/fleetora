@@ -69,7 +69,7 @@ const updateVehicle = async (req, res) => {
     }
     const vehicle = await Vehicle.findOneAndUpdate({_id: id},{
         ...req.body
-    })
+    }, { new: true })
 
     if(!vehicle){
         return res.status(404).json({error: 'no such vehicle'})

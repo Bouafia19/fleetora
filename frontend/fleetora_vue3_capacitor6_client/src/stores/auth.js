@@ -23,18 +23,31 @@ export const useAuthStore = defineStore('auth', {
     actions: {
         
         async setLSUserInfo(data){
+            try {
+                localStorage.setItem('userInfo', typeof data === 'string' ? data : JSON.stringify(data))
+            } catch (e) {}
             await Preferences.set({
               key: 'userInfo',
-              value: data,
+              value: typeof data === 'string' ? data : JSON.stringify(data),
             })
         },
 
         async getLSUserInfo(){
-            const { value } = await Preferences.get({ key: 'userInfo' })
-            return JSON.parse(value)
+            try {
+                const { value } = await Preferences.get({ key: 'userInfo' })
+                if (value) return JSON.parse(value)
+            } catch (e) {}
+            try {
+                const ls = localStorage.getItem('userInfo')
+                if (ls) return JSON.parse(ls)
+            } catch (e) {}
+            return null
         },
 
         async removeLSUserInfo(){
+            try {
+                localStorage.removeItem('userInfo')
+            } catch (e) {}
             await Preferences.remove({ key: 'userInfo' })
         },
 
@@ -63,19 +76,19 @@ export const useAuthStore = defineStore('auth', {
         async account_sign_in (params) {
             try {
                 const response = await axios.post("api/users/login", params)
-                if(response){
-                    this.user = response.data
+                if(response && response.data){
+                    this.user = response.data.user || response.data
+                    this.token = response.data.token
                     this.auth_login = true
                     
-                    this.setLSUserInfo(JSON.stringify(response.data)).then(() => {
-                        this.router.push('/tabs')  
-                    })
+                    await this.setLSUserInfo(response.data)
+                    this.router.push('/tabs')
                 }else{
                     throw new Error('could not complete login')
                 }
             } catch (error) {
-                // console.log('error', error.response.data.error)
-                throw new Error(`${error.response.data.error}`)
+                const msg = error.response?.data?.error || error.message || 'Login failed'
+                throw new Error(msg)
             }
         },
     
@@ -166,21 +179,27 @@ export const useAuthStore = defineStore('auth', {
         account_sign_out () {
             this.removeLSUserInfo()
             this.auth_login = false
-            this.router.push('/home')
+            this.user = null
+            this.token = null
+            this.router.push('/login')
         },
     
         async attempt(token){
             if (token){
-                this.user = token
+                this.token = token
                 this.auth_login = true
-                
+                try {
+                    const ls = await this.getLSUserInfo()
+                    if (ls && ls.user) {
+                        this.user = ls.user
+                    }
+                } catch (e) {}
                 return true
             }
-            if (!token) {
-                this.user = ''
-                this.auth_login = false
-                return false
-            }
+            this.user = null
+            this.token = null
+            this.auth_login = false
+            return false
         },
       
     },

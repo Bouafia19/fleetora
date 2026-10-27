@@ -127,12 +127,26 @@
               class="mt-4 font-weight-bold elevation-1"
               type="submit"
               :loading="loading"
+              @click="submit"
               append-icon="mdi-login"
             >
               {{ $t('Login') || 'Sign In to Fleetora' }}
             </v-btn>
 
-            <div class="text-center mt-6">
+            <div class="text-center mt-4">
+              <v-btn
+                variant="tonal"
+                color="primary"
+                size="small"
+                class="text-none mb-2"
+                prepend-icon="mdi-account-check"
+                @click="fillDemoClient"
+              >
+                Use Demo Client: 0550 00 00 03
+              </v-btn>
+            </div>
+
+            <div class="text-center mt-4">
               <span class="text-caption text-slate-500">Don't have an account? </span>
               <router-link to="/signup" class="text-caption font-weight-bold text-primary text-decoration-none">
                 {{ $t('SignUp') || 'Register now' }}
@@ -167,16 +181,19 @@ onMounted(() => {
   }
 })
 
+function normalizeDzPhone(raw) {
+  if (!raw) return ''
+  let cleaned = String(raw).replace(/[\s\-\(\)\.]/g, '')
+  if (cleaned.startsWith('00213')) cleaned = cleaned.slice(5)
+  else if (cleaned.startsWith('+213')) cleaned = cleaned.slice(4)
+  else if (cleaned.startsWith('213') && cleaned.length > 9) cleaned = cleaned.slice(3)
+  if (cleaned.startsWith('0')) cleaned = cleaned.slice(1)
+  return '+213' + cleaned
+}
+
 const logIn = async () => {
   try {
-    let cleanPhone = phoneNumber.value.trim()
-    if (!cleanPhone.startsWith('+213')) {
-      if (cleanPhone.startsWith('0')) {
-        cleanPhone = '+213' + cleanPhone.slice(1)
-      } else {
-        cleanPhone = '+213' + cleanPhone
-      }
-    }
+    const cleanPhone = normalizeDzPhone(phoneNumber.value)
     await auth.account_sign_in({  
       phone: cleanPhone,
       password: password.value,
@@ -193,6 +210,12 @@ const submit = () => {
   loading.value = true
   err.value = ''
   logIn()
+}
+
+const fillDemoClient = () => {
+  phoneNumber.value = '0550000003'
+  password.value = 'client123456'
+  err.value = ''
 }
 </script>
 

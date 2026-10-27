@@ -84,20 +84,27 @@ export const useAuthStore = defineStore('auth', {
         account_sign_out () {
             localStorage.removeItem('userInfo')
             this.auth_login = false
-            this.router.push('/signup')
+            this.user = null
+            this.token = null
+            this.router.push('/login')
         },
 
         async attempt(token){
             if (token){
-                this.user = token
+                this.token = token
                 this.auth_login = true
+                try {
+                    const ls = JSON.parse(localStorage.getItem('userInfo'))
+                    if (ls && ls.user) {
+                        this.user = ls.user
+                    }
+                } catch (e) {}
                 return true
             }
-            if (!token) {
-                this.user = ''
-                this.auth_login = false
-                return false
-            }
+            this.user = null
+            this.token = null
+            this.auth_login = false
+            return false
         },
       
     },

@@ -49,7 +49,7 @@
             </v-alert>
           </div>
 
-          <form @submit.prevent="submit">
+          <v-form @submit.prevent="submit">
             <div class="mb-3">
               <label class="text-caption font-weight-bold text-grey-darken-2 d-block mb-1">Email Address</label>
               <v-text-field
@@ -62,6 +62,7 @@
                 color="primary"
                 required
                 hide-details="auto"
+                @keyup.enter="submit"
               ></v-text-field>
             </div>
 
@@ -80,6 +81,7 @@
                 color="primary"
                 required
                 hide-details="auto"
+                @keyup.enter="submit"
               ></v-text-field>
             </div>
 
@@ -91,17 +93,28 @@
               rounded="lg"
               class="text-none font-weight-bold mb-4 elevation-1"
               :loading="loading"
+              @click="submit"
             >
               Sign In to Fleetora
               <v-icon end size="small">mdi-login</v-icon>
             </v-btn>
 
             <div class="text-center">
+              <v-btn
+                variant="tonal"
+                color="primary"
+                size="small"
+                class="text-none mb-2"
+                prepend-icon="mdi-account-key-outline"
+                @click="fillDemoCredentials"
+              >
+                Use Demo Admin: admin@fleetora.com
+              </v-btn>
               <div class="text-caption text-grey">
-                Default credentials: <span class="font-weight-bold text-primary">admin@fleetora.com</span>
+                Default credentials: <span class="font-weight-bold text-primary">admin@fleetora.com</span> / <span class="font-weight-bold">admin123456</span>
               </div>
             </div>
-          </form>
+          </v-form>
         </v-col>
       </v-row>
     </v-card>
@@ -140,6 +153,12 @@ const submit = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const fillDemoCredentials = () => {
+  email.value = 'admin@fleetora.com'
+  password.value = 'admin123456'
+  err.value = ''
 }
 </script>
 

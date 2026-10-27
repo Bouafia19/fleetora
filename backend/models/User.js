@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const validator = require('validator')
+const { normalizePhone, getPhoneWithZero } = require('../utils/phone')
 const Schema = mongoose.Schema 
 
 const UserSchema = new mongoose.Schema({
@@ -159,20 +160,20 @@ UserSchema.statics.loginPhone = async function( phone, password, role) {
     throw Error('All field must be filled')
   }
 
-  let phoneWith0
-  if(phone.length === 14){
-    phoneWith0 = phone.slice(0, 4) + phone.slice(5)
-  }else if (phone.length === 13){
-    phoneWith0 = phone.slice(0, 4) + '0' + phone.slice(4)
-  }
+  const cleanPhone = normalizePhone(phone)
+  const phoneWith0 = getPhoneWithZero(cleanPhone)
   let user = null
   let user0 = null
   if(role === 'client'){
-    user = await this.findOne({ phone: phone, role: 'client', activated: true })
-    user0 = await this.findOne({ phone: phoneWith0, role: 'client', activated: true })
+    user = await this.findOne({ phone: cleanPhone, role: 'client', activated: true })
+    if (!user && phoneWith0 !== cleanPhone) {
+      user0 = await this.findOne({ phone: phoneWith0, role: 'client', activated: true })
+    }
   }else if(role === 'transporter'){
-    user = await this.findOne({ phone: phone, role: 'transporter', activated: true })
-    user0 = await this.findOne({ phone: phoneWith0, role: 'transporter', activated: true })
+    user = await this.findOne({ phone: cleanPhone, role: 'transporter', activated: true })
+    if (!user && phoneWith0 !== cleanPhone) {
+      user0 = await this.findOne({ phone: phoneWith0, role: 'transporter', activated: true })
+    }
   }
   
   if(!user && !user0){
@@ -221,14 +222,10 @@ UserSchema.statics.loginPhoneWeb = async function( phone, role, password ) {
     throw Error('Password field must be filled')
   }
 
-  let phoneWith0
-  if(phone.length === 14){
-    phoneWith0 = phone.slice(0, 4) + phone.slice(5)
-  }else if (phone.length === 13){
-    phoneWith0 = phone.slice(0, 4) + '0' + phone.slice(4)
-  }
-  let user = await this.findOne({ phone, role: role })
-  if (!user && phoneWith0) {
+  const cleanPhone = normalizePhone(phone)
+  const phoneWith0 = getPhoneWithZero(cleanPhone)
+  let user = await this.findOne({ phone: cleanPhone, role: role })
+  if (!user && phoneWith0 && phoneWith0 !== cleanPhone) {
     user = await this.findOne({ phone: phoneWith0, role: role })
   }
 
@@ -253,11 +250,12 @@ UserSchema.statics.signupWeb = async function( phone, role, email, firstName, la
     throw Error('Password field must be filled')
   }
 
+  const cleanPhone = normalizePhone(phone)
   const salt = await bcrypt.genSalt(10)
   const hashedPassword = await bcrypt.hash(password, salt)
 
   const user = await this.create({
-    phone,
+    phone: cleanPhone,
     role: role || 'client',
     email,
     firstName,

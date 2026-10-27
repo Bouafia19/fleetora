@@ -264,6 +264,7 @@ const switchLocale = (code) => {
 }
 
 onMounted(() => {
+  user.fetchUser()
   const savedLocale = localStorage.getItem('fleetora_locale')
   if (savedLocale && ['en', 'fr', 'ar'].includes(savedLocale)) {
     locale.value = savedLocale

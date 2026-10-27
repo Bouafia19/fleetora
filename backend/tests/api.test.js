@@ -87,13 +87,14 @@ describe('Fleetora Backend Express 5 API Test Suite', () => {
         assert.ok(res.body.token, 'Token must be present')
         assert.ok(res.body.user, 'User object must be present')
         assert.strictEqual(res.body.user.role, 'administrator')
+        assert.strictEqual(res.body.user.password, undefined, 'Administrator password hash must NOT be returned')
         assert.ok(Array.isArray(res.body.rules), 'CASL authorization rules must be an array')
         adminToken = res.body.token
     })
 
-    test('POST /users/login authenticates Partner transporter with phone and password', async () => {
+    test('POST /users/login authenticates Partner transporter with local phone format and password', async () => {
         const res = await request('POST', '/users/login', {
-            phone: '+213550000002',
+            phone: '0550000002',
             password: 'partner123456',
             role: 'transporter'
         })
@@ -103,9 +104,9 @@ describe('Fleetora Backend Express 5 API Test Suite', () => {
         partnerToken = res.body.token
     })
 
-    test('POST /users/login authenticates Client with phone and password', async () => {
+    test('POST /users/login authenticates Client with local phone format and spaces', async () => {
         const res = await request('POST', '/users/login', {
-            phone: '+213550000003',
+            phone: '0550 00 00 03',
             password: 'client123456',
             role: 'client'
         })

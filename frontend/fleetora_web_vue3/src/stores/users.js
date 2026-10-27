@@ -15,21 +15,28 @@ export const useUsersStore = defineStore('users', {
     actions: {
         //fetch single User
         async fetchUser(){
-            return new Promise((resolve, reject) => {
-                try {
-                    const ls = JSON.parse(localStorage.getItem('userInfo'))
+            try {
+                const ls = JSON.parse(localStorage.getItem('userInfo'))
+                if (ls && ls.user) {
                     this.user = ls.user
-                    resolve()
-                } catch (error) {
-                    reject()
-                    throw new Error(`${error}`)
+                    return ls.user
                 }
-            })
+            } catch (error) {
+                // safely ignore JSON error
+            }
+            this.user = null
+            return null
         },
 
         // edit users
         async editUsers(params){
-            const ls = JSON.parse(localStorage.getItem('userInfo'))
+            let ls = null
+            try {
+                ls = JSON.parse(localStorage.getItem('userInfo'))
+            } catch (e) {}
+            if (!ls || !ls.user || !ls.token) {
+                throw new Error('Not authenticated')
+            }
             
             try {
                 const response = await axios.patch(`api/users/${ls.user._id}`, params, {
@@ -38,7 +45,7 @@ export const useUsersStore = defineStore('users', {
                     },
                 })
                 if(response.status === 200){
-                    this.fetchUser()
+                    await this.fetchUser()
                 }
             } catch (error) {
                 throw new Error(`${error}`)

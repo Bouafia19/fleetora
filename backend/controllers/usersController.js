@@ -4,6 +4,7 @@ const mongoose = require('mongoose')
 const bcrypt = require('bcrypt')
 const { messaging } = require('../modules/firebase')
 const { defineRulesFor } = require('../modules/abilities')
+const { normalizePhone, getPhoneWithZero } = require('../utils/phone')
 
 let client = null
 if (process.env.ACCOUNT_SID && process.env.AUTH_TOKEN && process.env.ACCOUNT_SID.startsWith('AC')) {
@@ -25,7 +26,8 @@ const loginUserWeb = async (req, res) => {
         if (!phone || !password) {
             return res.status(400).json({ error: 'Phone and password are required' })
         }
-        const item = await User.loginPhone(phone, password, role || 'client')
+        const cleanPhone = normalizePhone(phone)
+        const item = await User.loginPhone(cleanPhone, password, role || 'client')
         // create token
         const token = createToken(item._id)
         let user = {
@@ -50,13 +52,25 @@ const signupUserWeb = async (req, res) => {
         if (!phone || !password) {
             return res.status(400).json({ error: 'Phone and password are required' })
         }
+        const cleanPhone = normalizePhone(phone)
+        const phoneWith0 = getPhoneWithZero(cleanPhone)
+        
+        // Check for existing account
+        const exists = await User.findOne({
+            $or: [{ phone: cleanPhone }, { phone: phoneWith0 }],
+            role: 'client'
+        })
+        if (exists) {
+            return res.status(400).json({ error: 'paiu' })
+        }
+
         // Strict role restriction: web signup is only permitted for clients
         const role = 'client'
         const item = await User.signup(
-            email || `${phone.replace(/[^0-9]/g, '')}@fleetora.local`,
+            email || `${cleanPhone.replace(/[^0-9]/g, '')}@fleetora.local`,
             firstName || 'Client',
             lastName || 'User',
-            phone,
+            cleanPhone,
             password,
             role,
             '', // fcmToken
@@ -90,16 +104,15 @@ const signupUserWeb = async (req, res) => {
 // GET a single user by phone number
 const verifyUser = async (req, res) => {
     const { phonenumber, role } = req.body
-
-    let phoneWith0
-    if(phonenumber.length === 14){
-        phoneWith0 = phonenumber.slice(0, 4) + phonenumber.slice(5)
-    }else if (phonenumber.length === 13){
-        phoneWith0 = phonenumber.slice(0, 4) + '0' + phonenumber.slice(4)
+    if (!phonenumber) {
+        return res.status(400).json({ error: 'Phone number is required' })
     }
+
+    const cleanPhone = normalizePhone(phonenumber)
+    const phoneWith0 = getPhoneWithZero(cleanPhone)
    
-    const user = await User.findOne({ phone: phonenumber, role: role })
-    const user0 = await User.findOne({ phone: phoneWith0, role: role })
+    const user = await User.findOne({ phone: cleanPhone, role: role })
+    const user0 = user ? null : await User.findOne({ phone: phoneWith0, role: role })
 
     if(!user && !user0){
         return res.status(404).json({error: 'no such user'})
@@ -118,7 +131,8 @@ const loginUser = async (req, res) => {
     try {
         if(role != 'administrator'){
             const { phone, password } = req.body
-            const item = await User.loginPhone(phone, password, role)
+            const cleanPhone = normalizePhone(phone)
+            const item = await User.loginPhone(cleanPhone, password, role)
             // create token
             const token = createToken(item._id)
             
@@ -159,7 +173,22 @@ const loginUser = async (req, res) => {
             // create token
             const token = createToken(user._id)
             const rules = defineRulesFor(user)
-            res.status(200).json({ rules, user, token})
+            let safeUser = {
+                _id: user._id,
+                email: user.email,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                language: user.language,
+                phone: user.phone,
+                role: user.role,
+                activated: user.activated,
+                complete: user.complete,
+                status: user.status,
+                authorizationIds: user.authorizationIds,
+                createdAt: user.createdAt,
+                updatedAt: user.updatedAt
+            }
+            res.status(200).json({ rules, user: safeUser, token})
         }
 
     } catch (error) {
@@ -192,11 +221,12 @@ const signupUser = async (req, res) => {
     }
 
     try {
+        const cleanPhone = normalizePhone(phone)
         const item = await User.signup(
             email, 
             firstName, 
             lastName, 
-            phone, 
+            cleanPhone, 
             password, 
             role, 
             fcmToken, 
@@ -264,27 +294,24 @@ const verifyPhone = async (req, res) => {
     if(!phonenumber || !channel){
         return res.status(400).json({error: 'All field must be filled'})
     }
-    let phoneWith0
-    if(phonenumber.length === 14){
-        phoneWith0 = phonenumber.slice(0, 4) + phonenumber.slice(5)
-    }else if (phonenumber.length === 13){
-        phoneWith0 = phonenumber.slice(0, 4) + '0' + phonenumber.slice(4)
-    }
 
-    const exists = await User.findOne({  phone: phonenumber,  role: role })
-    const exists0 = await User.findOne({  phone: phoneWith0,  role: role })
+    const cleanPhone = normalizePhone(phonenumber)
+    const phoneWith0 = getPhoneWithZero(cleanPhone)
+
+    const exists = await User.findOne({  phone: cleanPhone,  role: role })
+    const exists0 = (phoneWith0 && phoneWith0 !== cleanPhone) ? await User.findOne({  phone: phoneWith0,  role: role }) : null
     if(exists || exists0){
         return res.status(400).json({error: 'paiu'})
     }
-    else if (phonenumber) {
+    else if (cleanPhone) {
         if (client && process.env.SERVICE_ID) {
             try {
                 const verification = await client.verify.v2.services(process.env.SERVICE_ID)
                     .verifications
-                    .create({ to: phonenumber, channel: channel || 'sms' })
+                    .create({ to: cleanPhone, channel: channel || 'sms' })
                 return res.status(200).send({
                     message: "Verification is sent!!",
-                    phonenumber: phonenumber,
+                    phonenumber: cleanPhone,
                     verification
                 })
             } catch (err) {
@@ -293,7 +320,7 @@ const verifyPhone = async (req, res) => {
         }
         res.status(200).send({
             message: "Verification is sent!!",
-            phonenumber: phonenumber,
+            phonenumber: cleanPhone,
         })
     } 
     else {
@@ -308,12 +335,13 @@ const verifyPhone = async (req, res) => {
 // verify code
 const verifyCode = async (req, res) => {
     const { phonenumber, code } = req.body
-    if (phonenumber && code && code.length === 6) {
+    const cleanPhone = normalizePhone(phonenumber)
+    if (cleanPhone && code && code.length === 6) {
         if (client && process.env.SERVICE_ID) {
             try {
                 const data = await client.verify.v2.services(process.env.SERVICE_ID)
                     .verificationChecks
-                    .create({ to: phonenumber, code: code })
+                    .create({ to: cleanPhone, code: code })
                 if (data.status === "approved") {
                     return res.status(200).send({
                         message: "User is Verified!!",
@@ -332,7 +360,7 @@ const verifyCode = async (req, res) => {
         // Dev/simulated verification approval
         return res.status(200).send({
             message: "User is Verified!!",
-            data: { status: "approved", to: phonenumber }
+            data: { status: "approved", to: cleanPhone }
         })
     } else {
         return res.status(400).send({

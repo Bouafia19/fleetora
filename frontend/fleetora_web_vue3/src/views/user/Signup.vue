@@ -243,9 +243,19 @@
     }
   }
 
+  function normalizeDzPhone(raw) {
+    if (!raw) return ''
+    let cleaned = String(raw).replace(/[\s\-\(\)\.]/g, '')
+    if (cleaned.startsWith('00213')) cleaned = cleaned.slice(5)
+    else if (cleaned.startsWith('+213')) cleaned = cleaned.slice(4)
+    else if (cleaned.startsWith('213') && cleaned.length > 9) cleaned = cleaned.slice(3)
+    if (cleaned.startsWith('0')) cleaned = cleaned.slice(1)
+    return '+213' + cleaned
+  }
+
   const submit = handleSubmit(() => {
     loading.value = true
-    phoneNumber.value = '+213' + phone.value.value
+    phoneNumber.value = normalizeDzPhone(phone.value.value)
     verifyPhone()
   })
 

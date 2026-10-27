@@ -95,9 +95,23 @@
           rounded="xl"
           class="font-weight-bold elevation-2 mt-4 fl-auth-btn"
           :loading="loading"
+          @click="submit"
         >
           {{ $t('Login') || 'Sign In as Driver' }}
         </v-btn>
+
+        <div class="text-center mt-3">
+          <v-btn
+            variant="tonal"
+            color="primary"
+            size="small"
+            class="text-none"
+            prepend-icon="mdi-truck-check"
+            @click="fillDemoPartner"
+          >
+            Use Demo Carrier: 0550 00 00 02
+          </v-btn>
+        </div>
       </form>
 
       <!-- Switch to Register -->
@@ -139,10 +153,19 @@ const phoneNumber = ref(''),
       show = ref(false),
       loading = ref(false)
 
+function normalizeDzPhone(raw) {
+  if (!raw) return ''
+  let cleaned = String(raw).replace(/[\s\-\(\)\.]/g, '')
+  if (cleaned.startsWith('00213')) cleaned = cleaned.slice(5)
+  else if (cleaned.startsWith('+213')) cleaned = cleaned.slice(4)
+  else if (cleaned.startsWith('213') && cleaned.length > 9) cleaned = cleaned.slice(3)
+  if (cleaned.startsWith('0')) cleaned = cleaned.slice(1)
+  return '+213' + cleaned
+}
+
 const logIn = async () => {
   try {
-    let cleanPhone = (phoneNumber.value || '').replace(/\s+/g, '')
-    let phoneNum = '+213' + cleanPhone
+    const phoneNum = normalizeDzPhone(phoneNumber.value)
     await auth.account_sign_in({  
       phone: phoneNum,
       password: password.value,
@@ -156,6 +179,13 @@ const logIn = async () => {
     }, 5000)
   }
   loading.value = false
+}
+
+const fillDemoPartner = () => {
+  phone.value.value = '550000002'
+  phoneNumber.value = '0550000002'
+  password.value = 'partner123456'
+  err.value = ''
 }
 
 const submit = handleSubmit(values => {

@@ -93,6 +93,30 @@ if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')
 }
 axios.defaults.baseURL = apiBase.endsWith('/') ? apiBase : `${apiBase}/`
 
+// Global Axios Interceptors for Auth and Session Invalidation
+axios.interceptors.request.use((config) => {
+    try {
+        const ls = JSON.parse(localStorage.getItem('userInfo'))
+        if (ls && ls.token && !config.headers['Authorization']) {
+            config.headers['Authorization'] = `Bearer ${ls.token}`
+        }
+    } catch (e) {}
+    return config
+}, (error) => Promise.reject(error))
+
+axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem('userInfo')
+            if (router.currentRoute.value.path !== '/login') {
+                router.push('/login')
+            }
+        }
+        return Promise.reject(error)
+    }
+)
+
 const app = createApp(App)
 const pinia = createPinia()
 
