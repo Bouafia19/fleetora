@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import axios from 'axios'
 import io from "socket.io-client"
 import { Capacitor } from '@capacitor/core'
+import { calculateHaversineDistance } from '@/services/routingService'
 import { useAnnouncementsStore } from './announcements'
 import { useAuthStore } from './auth'
 
@@ -101,10 +102,7 @@ export const useTripsStore = defineStore('trips', {
         },
 
     calcRoute(params) {
-        //create a DirectionsService object to use the route method and get a result for our request
-        const directionsService = new google.maps.DirectionsService()
-        
-        let transporters = params.response.data
+        let transporters = params.response.data || []
         
         const PROD_API_URL = 'https://fleetora-api-93an.onrender.com'
         let backendUrl = import.meta.env.VITE_API_URL || 
@@ -125,35 +123,32 @@ export const useTripsStore = defineStore('trips', {
         let client = params.params
 
         if(client.distance > 30){
-            transporters = params.response.data.filter(e => e.legal)
+            transporters = (params.response.data || []).filter(e => e.legal)
         }else{
-            transporters = params.response.data
+            transporters = params.response.data || []
         }
 
         console.log('transporters', transporters)
 
         let array = []
 
+        const clientLat = client.fromLat || 36.1911
+        const clientLng = client.fromLng || 5.4137
+
         transporters.forEach(element => {
-            //create request
-            let request = {
-                origin: client.from,
-                destination: element.lastLatLng,
-                travelMode: google.maps.TravelMode.DRIVING, //WALKING, BYCYCLING, TRANSIT
-                // unitSystem: google.maps.unitsystem.METRIC
+            if (element.lastLatLng && element.lastLatLng.lat && element.lastLatLng.lng) {
+                const dist = calculateHaversineDistance(
+                    clientLat, clientLng,
+                    element.lastLatLng.lat, element.lastLatLng.lng
+                )
+                element.distance = Math.round(dist * 1.25)
+            } else {
+                element.distance = Math.floor(Math.random() * 20) + 5
             }
-  
-            //pass the request to the route method
-            directionsService.route(request,  (result, status) => {
-                if (status == google.maps.DirectionsStatus.OK) {
-                    element.distance = parseInt(result.routes[0].legs[0].distance.text.slice(0, 3))
-                    if(element.distance < 30){
-                        array.push(element)
-                    }
-                } else {
-                    this.err = 'Could not retrieve driving distance.'
-                }
-            })
+
+            if(element.distance < 30){
+                array.push(element)
+            }
         })
 
         let sortedTransporters = array.sort((p1, p2) => (p1.distance > p2.distance) ? 1 : (p1.distance < p2.distance) ? -1 : 0)

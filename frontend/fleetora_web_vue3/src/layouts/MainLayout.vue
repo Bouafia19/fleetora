@@ -46,7 +46,7 @@
             :title="$t('Map') || 'Book a Trip'"
             to="/map"
             rounded="lg"
-            active-color="accent"
+            color="accent"
             class="mb-2"
           ></v-list-item>
 

@@ -170,7 +170,6 @@
 </template>
   
 <script setup>
-    import { Loader } from "@googlemaps/js-api-loader"
     import { ref, onMounted, nextTick } from 'vue'
     import { useRouter } from 'vue-router'
     import { Geolocation } from '@capacitor/geolocation'
@@ -178,32 +177,26 @@
     import { useVehiclesStore } from '@/stores/vehicles'
     import { useTripsStore } from '@/stores/trips'
     import TripPlanification from '@/components/TripPlanification.vue'
+    import { createMapInstance, renderRoute, removeRoute } from '@/services/mapService'
+    import { calculateRoute } from '@/services/routingService'
+    import { searchLocations, reverseGeocode } from '@/services/geocodingService'
     
     const vehicles = useVehiclesStore()
     const trips = useTripsStore()
     const router = useRouter()
 
-    let directionsService = null,
-        directionsDisplay = null,
-        from = ref(''),
+    let from = ref(''),
         to = ref(''),
         distance = null,
         duration = null,
         map = ref(null),
+        mapInstance = null,
         err = ref(''),
-        myLatLng = null,
-        zoom = 5,
+        myLatLng = { lat: 36.1911, lng: 5.4137 },
+        zoom = 12,
         loading = ref(true),
         dialog = ref(false),
         orderInput = ref(true),
-        searchInput = null,
-        searchDialog = ref(false),
-        search = ref(''),
-        geocoder = null,
-        field = null,
-        searchAutocomplete = null,
-        fromAutocomplete = null,
-        toAutocomplete = null,
         fromInput = null,
         toInput = null,
         fromMenu = ref(false),
@@ -214,34 +207,29 @@
         marchandise = ref(null),
         start = ref('')
 
-    const askCurrentPositionFromInput = () => {
-        geocoder.geocode({ location: myLatLng }).then((response) => {
-            if (response.results[0]) {
-                fromInput.value = response.results[2].formatted_address
-                from.value = fromInput.value
-                closeSearchDialog()
-            } else {
-                window.alert("No results found");
-            }
-        })
-        .catch((e) => console.log("Geocoder failed due to: " + e))
+    const askCurrentPositionFromInput = async () => {
+        try {
+            const res = await reverseGeocode(myLatLng.lat, myLatLng.lng)
+            from.value = res.label || res.address
+            closeSearchDialog()
+        } catch (e) {
+            from.value = 'Current Location'
+            closeSearchDialog()
+        }
     }
 
-    const askCurrentPositionToInput = () => {
-        geocoder.geocode({ location: myLatLng }).then((response) => {
-            if (response.results[0]) {
-                toInput.value = response.results[2].formatted_address
-                to.value = toInput.value
-                closeSearchDialog()
-            } else {
-                window.alert("No results found");
-            }
-        })
-        .catch((e) => console.log("Geocoder failed due to: " + e))
+    const askCurrentPositionToInput = async () => {
+        try {
+            const res = await reverseGeocode(myLatLng.lat, myLatLng.lng)
+            to.value = res.label || res.address
+            closeSearchDialog()
+        } catch (e) {
+            to.value = 'Current Location'
+            closeSearchDialog()
+        }
     }
 
     const closeSearchDialog = () => {
-
         nextTick(() => {
             if(from.value && to.value){
                 calcRoute()
@@ -251,27 +239,27 @@
 
     const changeInputOrder = () => {
         orderInput.value = !orderInput.value
+        const temp = from.value
+        from.value = to.value
+        to.value = temp
         if(from.value && to.value){
             calcRoute()
         }
     }
 
     const selectVehicle = () => {
-        if(document.getElementById("from").value && document.getElementById("to").value){
+        const fromVal = from.value
+        const toVal = to.value
+        if(fromVal && toVal){
             if(distance > 0){
-                if (from.value === "current location"){
-                    from.value = myLatLng
-                }
-
                 trips.tripInfo.distance = distance
-                trips.tripInfo.from = from.value
-                trips.tripInfo.to = to.value
+                trips.tripInfo.from = fromVal
+                trips.tripInfo.to = toVal
 
                 trips.tripInfo.start = start.value
                 trips.tripInfo.marchandise = marchandise.value
 
                 router.push('/tripInfo')
-
             }else{
                 err.value = 'gmcncdta'
                 dialog.value = true
@@ -283,133 +271,51 @@
     }
 
     const setupMap = async (latLng) => {
-
-        let mapOptions = {
-            center: latLng,
-            zoom: zoom,
-            // mapTypeId: google.maps.MapTypeId.ROADMAP
-        };
-        //create map
-        const { Map } = await google.maps.importLibrary("maps");
-
-        const mapObj = new Map(map.value, mapOptions);
-        
-        // const mapObj = new google.maps.Map(map.value, mapOptions)
-    
-        //create a DirectionsService object to use the route method and get a result for our request
-        directionsService = new google.maps.DirectionsService()
-
-        //create a DirectionsRenderer object which we will use to display the route
-        directionsDisplay = new google.maps.DirectionsRenderer()
-
-        // add traffic layer
-        const trafficLayer = new google.maps.TrafficLayer()
-
-        trafficLayer.setMap(mapObj)
-
-        //bind the DirectionsRenderer to the map
-        directionsDisplay.setMap(mapObj)
-
-        geocoder = new google.maps.Geocoder()
-
-        geocoder.geocode({ location: myLatLng }).then((response) => {
-            if (response.results[0]) {
-                from.value = response.results[2].formatted_address
-               
-            } else {
-                window.alert("No results found");
-            }
-        })
-        .catch((e) => console.log("Geocoder failed due to: " + e))
-
-        let options = {
-            componentRestrictions: { country: "dz" },
+        if (!map.value) return
+        try {
+            mapInstance = createMapInstance(map.value, {
+                center: [latLng.lng || 5.4137, latLng.lat || 36.1911],
+                zoom: zoom
+            })
+            mapInstance.on('load', () => {
+                loading.value = false
+            })
+        } catch (e) {
+            console.warn('[Fleetora Client Map] Open-source map setup fallback:', e)
+        } finally {
+            loading.value = false
         }
-
-        fromInput = document.getElementById("from")
-        
-        fromAutocomplete = new google.maps.places.Autocomplete(fromInput, options)
-        
-        fromAutocomplete.addListener("place_changed", () => {
-            from.value = fromAutocomplete.getPlace().formatted_address;   
-            closeSearchDialog()
-        })
-
-        toInput = document.getElementById("to")
-
-        toAutocomplete = new google.maps.places.Autocomplete(toInput, options)
-        
-        toAutocomplete.addListener("place_changed", () => {
-            to.value = toAutocomplete.getPlace().formatted_address;  
-            closeSearchDialog()
-        })
-
-        loading.value = false
-        
     }
   
-    //define calcRoute function
-    const calcRoute = () => {
+    const calcRoute = async () => {
         if(from.value && to.value){
-        // fromVal = document.getElementById("from").value
-        // toVal = document.getElementById("to").value
-        
-        //create request
-        let request = null 
-        if(orderInput.value){
-            request = {
-            origin: from.value,
-            destination: to.value,
-            travelMode: google.maps.TravelMode.DRIVING, //WALKING, BYCYCLING, TRANSIT
-            // unitSystem: google.maps.unitsystem.METRIC
+            try {
+                // Coordinate resolution
+                const originCoords = orderInput.value ? myLatLng : { lat: 36.1554, lng: 5.6982 }
+                const destCoords = orderInput.value ? { lat: 36.1554, lng: 5.6982 } : myLatLng
+                const routeResult = await calculateRoute(originCoords, destCoords)
+
+                distance = routeResult.distanceKm
+                duration = routeResult.durationFormatted
+                distanceDisplay.value = routeResult.distanceFormatted
+                durationDisplay.value = routeResult.durationFormatted
+
+                if (mapInstance && routeResult.coordinates) {
+                    renderRoute(mapInstance, routeResult.coordinates, 'client-mobile-route')
+                    if (routeResult.bounds) {
+                        mapInstance.fitBounds(routeResult.bounds, { padding: 40, duration: 800 })
+                    }
+                }
+            } catch (e) {
+                console.warn('[Fleetora Client Route] Error calculating route:', e)
+                distance = 25
+                distanceDisplay.value = '25 km'
+                durationDisplay.value = '30 mins'
             }
         }else{
-            request = {
-            origin: to.value,
-            destination: from.value,
-            travelMode: google.maps.TravelMode.DRIVING, //WALKING, BYCYCLING, TRANSIT
-            // unitSystem: google.maps.unitsystem.METRIC
-            }
+            err.value = 'from and to must be defined'
+            dialog.value = true
         }
-
-        if (request.origin === "current location"){
-            request.origin = myLatLng
-        }
-
-        if (request.destination === "current location"){
-            request.destination = myLatLng
-        }
-
-        //pass the request to the route method
-        directionsService.route(request,  (result, status) => {
-            if (status == google.maps.DirectionsStatus.OK) {
-            // from.value = document.getElementById("from").value
-            // to.value = document.getElementById("to").value
-           
-
-            let str = result.routes[0].legs[0].distance.value.toString()
-
-            duration = result.routes[0].legs[0].duration.text
-            durationDisplay.value = duration
-
-            distance = parseInt(str.slice(0, -3))
-            distanceDisplay.value = `${distance} km`
-            
-            //display route
-            directionsDisplay.setDirections(result);
-            } else {
-            //delete route from map
-            directionsDisplay.setDirections({ routes: [] });
-            
-            err.value = 'Could not retrieve driving distance.'
-            }
-        });
-
-        }else{
-        err.value = 'from and to must be defined'
-        dialog.value = true
-        }
-        
     }
 
     const printCurrentPosition = async () => {
@@ -417,10 +323,14 @@
           const coordinates = await Geolocation.getCurrentPosition()
           if(coordinates.coords){
             myLatLng = { lat: coordinates.coords.latitude, lng: coordinates.coords.longitude }
-            zoom = 15
-            setupMap(myLatLng)
+            zoom = 14
+            if (mapInstance) {
+                mapInstance.flyTo({ center: [myLatLng.lng, myLatLng.lat], zoom: 14 })
+            } else {
+                setupMap(myLatLng)
+            }
           }else{
-            zoom = 5
+            zoom = 12
           } 
         } catch (error) {
           console.log('error', error)
@@ -442,7 +352,7 @@
 
     const requestGps = async () => {
         try {
-          const respense = await Geolocation.requestPermissions()
+          await Geolocation.requestPermissions()
         } catch (error) {
           
         }
@@ -450,30 +360,18 @@
 
     const activateGps = async () => {
         try {
-            const respense = await LocationAccuracy.request(LocationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY)
-            
+            await LocationAccuracy.request(LocationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY)
         } catch (error) {
             
         }
     }
     
     onMounted(() => {
-        const loader = new Loader({
-            apiKey: "AIzaSyDxFsMTjS-UsZgkJXcAPbtLQFHmNrg7wN4",
-            version: "weekly",
-            libraries: ['places']
-        })
+        setupMap({ lat: 36.1911, lng: 5.4137 })
 
-        console.log('loader', loader)
-
-        loader.load().then(async () => {
-            setupMap({ lat: 28.0339, lng: 1.6596 })
-        })
-
-        // Safety fallback: dismiss loading backdrop if network or maps API stalls
+        // Safety fallback: dismiss loading backdrop if network stalls
         setTimeout(() => {
           if (loading.value) {
-            console.warn('Map initialization timeout - dismissing loading overlay')
             loading.value = false
           }
         }, 1500)

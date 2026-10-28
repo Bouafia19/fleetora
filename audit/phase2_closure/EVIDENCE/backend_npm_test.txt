@@ -1,0 +1,70 @@
+
+> fleetora-backend@1.0.0 test
+> node --test tests/*.test.js
+
+[Firebase] Initialization skipped: Cannot find module 'firebase-admin'
+Require stack:
+- /home/next/next projects/fleetora/backend/modules/firebase.js
+- /home/next/next projects/fleetora/backend/server.js
+- /home/next/next projects/fleetora/backend/tests/api.test.js
+[Test Server] Running on http://localhost:4199
+▶ Fleetora Backend Express 5 API Test Suite
+  ✔ GET /health returns 200 and healthy status (44.086334ms)
+  ✔ POST /users/login authenticates Administrator and returns rules + JWT token (175.936989ms)
+  ✔ POST /users/login authenticates Partner transporter with phone and password (87.715491ms)
+  ✔ POST /users/login authenticates Client with phone and password (99.045374ms)
+  ✔ GET /vehicles requires authentication and returns fleet vehicle types (15.016715ms)
+  ✔ GET /trips returns seeded trips with populated references (16.000943ms)
+  ✔ GET /company returns platform company profile (27.666218ms)
+  ✔ GET /terms returns public terms and conditions (6.075392ms)
+  ✔ GET /billings returns billing records (11.984928ms)
+  ✔ POST /users/verifyPhone validates phone format and duplicate checks (11.687693ms)
+  ✔ POST /users/verifyCode approves 6-digit code (2.454807ms)
+  ✔ Socket.io connects and handles real-time response events (123.768566ms)
+✔ Fleetora Backend Express 5 API Test Suite (650.890346ms)
+[Firebase] Initialization skipped: Cannot find module 'firebase-admin'
+Require stack:
+- /home/next/next projects/fleetora/backend/modules/firebase.js
+- /home/next/next projects/fleetora/backend/server.js
+- /home/next/next projects/fleetora/backend/tests/security.test.js
+[Security Test Server] Running on http://localhost:4201
+▶ Fleetora Security & Production Hardening Verification Suite
+  ▶ FLT-SEC-001: Account Modification & Privilege Escalation Defenses
+    ✔ Anonymous PATCH /users/update_existing_user/:id is strictly rejected (401) (8.304144ms)
+    ✔ Client attempting cross-user account modification is rejected (403) (10.688297ms)
+    ✔ Client attempting role escalation to administrator is neutralized (mass assignment blocked) (16.576191ms)
+    ✔ Legitimate authorized self-update succeeds for allowed fields (9.014495ms)
+  ✔ FLT-SEC-001: Account Modification & Privilege Escalation Defenses (46.290955ms)
+  ▶ FLT-SEC-002: Web Authentication & Passwordless Bypass Removal
+    ✔ POST /users/loginWeb without password is rejected (400) (3.003313ms)
+    ✔ POST /users/loginWeb with incorrect password is rejected (400) (92.761178ms)
+    ✔ POST /users/loginWeb with correct credentials returns authenticated JWT (89.316195ms)
+  ✔ FLT-SEC-002: Web Authentication & Passwordless Bypass Removal (185.678055ms)
+  ▶ FLT-SEC-003: Financial Billings Route Access Control
+    ✔ Anonymous GET /billings is strictly rejected (401) (4.566734ms)
+    ✔ Client GET /billings is forbidden (403) (5.392777ms)
+    ✔ Transporter GET /billings (all records) is forbidden (403) (4.441256ms)
+    ✔ Administrator GET /billings is allowed (200) (13.552207ms)
+  ✔ FLT-SEC-003: Financial Billings Route Access Control (28.495543ms)
+  ▶ FLT-SEC-005: Role-Based Access Control (RBAC) Enforcement
+    ✔ Client accessing GET /roles is forbidden (403) (10.685364ms)
+    ✔ Client accessing POST /vehicles is forbidden (403) (3.855791ms)
+    ✔ Client accessing POST /announcements is forbidden (403) (3.233741ms)
+    ✔ Client accessing POST /notifications/topics is forbidden (403) (3.361346ms)
+    ✔ Administrator accessing GET /roles is allowed (200) (8.842216ms)
+  ✔ FLT-SEC-005: Role-Based Access Control (RBAC) Enforcement (30.441361ms)
+  ▶ IDOR & Data Leakage Protection
+    ✔ Client cannot download another partner documents via loadPartnerPhotos (403) (5.139947ms)
+    ✔ Partner cannot view billing records of another partner (403) (3.827061ms)
+    ✔ Non-administrator attempting DELETE /trips/:id is forbidden (403) (4.674091ms)
+    ✔ GET /users excludes heavy document images to prevent memory exhaustion (FLT-ARC-002) (15.012487ms)
+  ✔ IDOR & Data Leakage Protection (29.103807ms)
+✔ Fleetora Security & Production Hardening Verification Suite (720.219155ms)
+ℹ tests 32
+ℹ suites 7
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1455.966882

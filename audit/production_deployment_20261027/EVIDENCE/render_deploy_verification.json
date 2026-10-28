@@ -1,0 +1,14 @@
+{
+  "id": "dep-dbg6hit9el5s73c29qrg",
+  "commit": {
+    "id": "73ce5e4291a8c76f415a8911557e9c3446dd4d78",
+    "message": "fix(security): enforce production secret validation, manifest override, and release signing configs",
+    "createdAt": "2026-10-26T13:25:32Z"
+  },
+  "status": "live",
+  "trigger": "api",
+  "createdAt": "2026-10-27T09:03:07.883093Z",
+  "updatedAt": "2026-10-27T09:04:18.858731Z",
+  "startedAt": "2026-10-27T09:03:07.857114Z",
+  "finishedAt": "2026-10-27T09:03:49.696935Z"
+}

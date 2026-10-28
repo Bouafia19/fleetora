@@ -302,6 +302,8 @@
     import { useTripsStore } from '@/stores/trips'
     import { useI18n } from 'vue-i18n'
     import { useRouter } from 'vue-router'
+    import { calculateHaversineDistance } from '@/services/routingService'
+    import { searchLocations } from '@/services/geocodingService'
 
     const users = useUsersStore()
     const trips = useTripsStore()
@@ -405,39 +407,16 @@
 
             const windowOpenUrl = () => {
                 loadingMaps.value = true
-                const directionsService = new google.maps.DirectionsService()
-                let distanceCD
-                // let url = 'com.google.android.apps.maps'
-                let url = 'https://www.google.com/maps/dir/'
+                let url = 'https://www.openstreetmap.org/directions'
 
-                let request = {
-                    origin: myLatLng.value,
-                    destination: trips.getTrip.to,
-                    travelMode: google.maps.TravelMode.DRIVING, //WALKING, BYCYCLING, TRANSIT
-                    // unitSystem: google.maps.unitsystem.METRIC
+                if (myLatLng.value && trips.getTrip.to) {
+                    url = encodeURI(`https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${myLatLng.value.lat}%2C${myLatLng.value.lng}%3B${trips.getTrip.to}`)
+                } else if (trips.getTrip.to) {
+                    url = encodeURI(`https://www.openstreetmap.org/search?query=${trips.getTrip.to}`)
                 }
 
-                //pass the request to the route method
-                directionsService.route(request,  async (result, status) => {
-                    if (status == google.maps.DirectionsStatus.OK) {
-                        distanceCD = parseInt(result.routes[0].legs[0].distance.text.slice(0, 3))
-                        console.log('distanceCD', distanceCD)
-                        console.log('trips.getTrip.distance', trips.getTrip.distance)
-                        console.log('trips.getTrip.to', trips.getTrip.to)
-                        console.log('trips.getTrip.from', trips.getTrip.from)
-                        if(distanceCD >= trips.getTrip.distance){
-                            url = encodeURI('https://www.google.com/maps/dir/?api=1&destination=' + trips.getTrip.to + '&waypoints=' + trips.getTrip.from + '&travelmode=driving')
-                        }else if(distanceCD < trips.getTrip.distance){
-                            url = encodeURI('https://www.google.com/maps/dir/?api=1&destination=' + trips.getTrip.to + '&travelmode=driving')
-                        }
-                        loadingMaps.value = false
-                        console.log('URL', url)
-                        window.open(url)
-                        // await AppLauncher.openUrl({ url: url })
-                    } else {
-                        err.value = 'Could not retrieve driving distance.'
-                    }
-                })
+                loadingMaps.value = false
+                window.open(url, '_blank')
             }
 
             const startTrip = () => {
@@ -455,51 +434,41 @@
             }
 
             const getDistance = (source, destination) => {
-                return google.maps.geometry.spherical.computeDistanceBetween(
-                    new google.maps.LatLng(source.lat, source.lng),
-                    new google.maps.LatLng(destination.lat, destination.lng)
-                )
+                return calculateHaversineDistance(source.lat, source.lng, destination.lat, destination.lng) * 1000
             }
 
             const getLastPosition = async () => {
                 try {
-                const coordinates = await Geolocation.watchPosition({ enableHighAccuracy: true, timeout: 300000, maximumAge: 300000 }, (pos, err) =>{
+                const coordinates = await Geolocation.watchPosition({ enableHighAccuracy: true, timeout: 300000, maximumAge: 300000 }, async (pos, err) =>{
                     if(pos){
-                        let myLatLng = { 
+                        let currentPos = { 
                             lat: pos.coords.latitude, 
                             lng: pos.coords.longitude,
                             time: pos.timestamp
                         }
 
-                        const destinationLatLng = { 
+                        let destinationLatLng = { 
                             lat: pos.coords.latitude, 
                             lng: pos.coords.longitude
                         }
 
-                        const geocoder = new google.maps.Geocoder()
+                        try {
+                            const results = await searchLocations(trips.getTrip.to)
+                            if (results && results.length > 0) {
+                                destinationLatLng.lat = results[0].lat
+                                destinationLatLng.lng = results[0].lng
 
-                        geocoder.geocode({  address: trips.getTrip.to,
-                                            componentRestrictions: { country: "dz" }, 
-                        }).then((response) => {
-                            if (response) {
-                                
-                                destinationLatLng.lat = response.results[0].geometry.location.lat()
-                                destinationLatLng.lng = response.results[0].geometry.location.lng()
-                               
-                                
-                                console.log('Dist', getDistance(myLatLng, destinationLatLng))
-                                let percentage = ((trips.getTrip.distance * 1000) * 70) / 100
-                                console.log('T Dist', percentage)
-                                if(getDistance(myLatLng, destinationLatLng) < percentage){
+                                const distMeters = getDistance(currentPos, destinationLatLng)
+                                const percentage = ((trips.getTrip.distance * 1000) * 70) / 100
+                                if(distMeters < percentage){
                                     trips.removeLSCurrentTrip()
                                     trips.trip.showFinish = true
                                     trips.setLSCurrentTrip(JSON.stringify(trips.trip))
                                 }
-                            } else {
-                                window.alert("No results found");
                             }
-                        })
-                        .catch((e) => console.log("Geocoder failed due to: " + e))
+                        } catch (err) {
+                            console.warn('[TripDetail] Geocoding lookup error:', err)
+                        }
 
                         
                     }else{

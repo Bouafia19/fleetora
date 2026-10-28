@@ -33,6 +33,8 @@ export default {
   passwordConfirmation: 'Confirmation mot de passe',
   ip: 'Téléphone erroné',
   ipass: 'password erroné',
+  Map: 'Carte de Fret',
+  map: 'carte',
   documentTitle: 'documents à fournir',
   documentParagraph: 'les documents suivants sont destinés à la constitution des dossiers de nos partenaires.',
   grayCard: 'carte grise',

@@ -150,7 +150,7 @@ async function seed() {
         authorizationIds: roles.map(r => r._id)
     })
 
-    // Transporter partner user
+    // Transporter partner user 1 (Sétif Hub)
     const transporter = await User.create({
         email: 'driver@fleetora.com',
         firstName: 'Karim',
@@ -166,8 +166,48 @@ async function seed() {
         legal: true,
         codePartenaire: 'FLT-DRV-001',
         vehicleId: vehicles[0]._id,
-        lastLatLng: { lat: 36.7538, lng: 3.0588 },
+        lastLatLng: { lat: 36.1911, lng: 5.4137 }, // Sétif Centre
         fcmToken: 'mock_fcm_token_transporter_fleetora_1'
+    })
+
+    // Transporter partner user 2 (Sétif Heavy Freight)
+    const transporter2 = await User.create({
+        email: 'rachid@fleetora.com',
+        firstName: 'Rachid',
+        lastName: 'Bouzid',
+        phone: '+213551234567',
+        password: partnerPasswordHash,
+        role: 'transporter',
+        language: 'fr',
+        activated: true,
+        complete: true,
+        status: true,
+        fileStatus: 'confirmed',
+        legal: true,
+        codePartenaire: 'FLT-SET-01',
+        vehicleId: vehicles[3]._id,
+        lastLatLng: { lat: 36.1772, lng: 5.4215 }, // Sétif Zone Industrielle
+        fcmToken: 'mock_fcm_token_transporter_fleetora_2'
+    })
+
+    // Transporter partner user 3 (Ain Arnat Logistics Area)
+    const transporter3 = await User.create({
+        email: 'walid@fleetora.com',
+        firstName: 'Walid',
+        lastName: 'Cherif',
+        phone: '+213552987654',
+        password: partnerPasswordHash,
+        role: 'transporter',
+        language: 'fr',
+        activated: true,
+        complete: true,
+        status: true,
+        fileStatus: 'confirmed',
+        legal: true,
+        codePartenaire: 'FLT-SET-03',
+        vehicleId: vehicles[1]._id,
+        lastLatLng: { lat: 36.1781, lng: 5.3256 }, // Ain Arnat
+        fcmToken: 'mock_fcm_token_transporter_fleetora_3'
     })
 
     // Client shipper user
@@ -183,7 +223,7 @@ async function seed() {
         complete: true,
         status: true,
         legal: true,
-        lastLatLng: { lat: 36.7525, lng: 3.0421 },
+        lastLatLng: { lat: 36.1893, lng: 5.4046 }, // Sétif
         fcmToken: 'mock_fcm_token_client_fleetora_1'
     })
 
@@ -194,20 +234,20 @@ async function seed() {
         transporterId: transporter._id,
         vehicleId: vehicles[0]._id,
         price: 3500,
-        distance: 18.5,
-        from: 'Port d\'Alger, Algiers',
-        to: 'Zone Industrielle Oued Smar, Algiers',
+        distance: 24.5,
+        from: 'Sétif — Zone Industrielle & Dépôts Logistiques',
+        to: 'Sétif — Gare Routière & Fret El Eulma',
         status: 'finished',
         finished: true,
         paid: true,
         rating: 5,
         start: new Date(Date.now() - 3600000 * 24),
         marchandise: {
-            weight: 450,
-            height: 120,
-            width: 80,
-            depth: 100,
-            type: 'Industrial Spares',
+            weight: 850,
+            height: 140,
+            width: 100,
+            depth: 120,
+            type: 'Industrial Spares & Electronics',
             photo: '/avatar.png'
         },
         cancellation: {

@@ -26,6 +26,7 @@
     "@capacitor/push-notifications": "^6.0.2",
     "@capacitor/status-bar": "^6.0.1",
     "axios": "^1.13.2",
+    "maplibre-gl": "^6.16.0",
     "moment": "^2.30.1",
     "pinia": "^3.0.4",
     "socket.io-client": "^4.8.1",

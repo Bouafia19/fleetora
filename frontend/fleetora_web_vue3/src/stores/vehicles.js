@@ -12,26 +12,35 @@ export const useVehiclesStore = defineStore('vehicles', {
     },
 
     actions: {
-        //fetch vehicles
+        //fetch vehicles safely without unhandled rejections
         async fetchVehicles(){
-            const ls = JSON.parse(localStorage.getItem('userInfo'))
-            
             try {
-                
-                const response = await axios.get(`api/vehicles`, {
-                    headers: {
-                        'Authorization': `Bearer ${ls.token}`
+                let token = null
+                try {
+                    const raw = localStorage.getItem('userInfo')
+                    if (raw) {
+                        const ls = JSON.parse(raw)
+                        token = ls?.token || null
                     }
-                })
-
-                if(response.status === 200){
-                    this.vehicles = response.data
+                } catch (e) {
+                    console.warn('Could not parse userInfo from localStorage', e)
                 }
-                
+
+                const headers = {}
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`
+                }
+
+                const response = await axios.get(`api/vehicles`, { headers })
+
+                if(response && response.status === 200){
+                    this.vehicles = response.data
+                    return response.data
+                }
             } catch (error) {
-                throw new Error(`${error}`)
+                console.warn('Backend /api/vehicles unavailable or unauthorized:', error.message || error)
+                return null
             }
-            
         }
     }
 })

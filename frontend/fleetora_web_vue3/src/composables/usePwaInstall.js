@@ -7,6 +7,7 @@ const isInstallable = ref(false)
 const isDismissed = ref(false)
 const showGuideModal = ref(false)
 const platform = ref('unknown') // 'android', 'ios', 'desktop', 'unknown'
+let isInitialized = false
 
 const checkInstallationStatus = () => {
   if (typeof window === 'undefined') return false
@@ -56,7 +57,8 @@ const checkDismissal = () => {
 
 export function usePwaInstall() {
   const initPwa = () => {
-    if (typeof window === 'undefined') return
+    if (typeof window === 'undefined' || isInitialized) return
+    isInitialized = true
 
     platform.value = detectPlatform()
     checkInstallationStatus()
@@ -71,9 +73,16 @@ export function usePwaInstall() {
 
     // Listen for beforeinstallprompt
     window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault()
       deferredPrompt.value = e
       isInstallable.value = true
+
+      // Avoid suppressing browser's native install experience unnecessarily
+      // Only preventDefault when our custom prompt banner is actively eligible to be displayed
+      if (!isDismissed.value && (platform.value === 'android' || platform.value === 'desktop')) {
+        try {
+          e.preventDefault()
+        } catch (_) {}
+      }
     })
 
     // Listen for appinstalled
@@ -88,14 +97,20 @@ export function usePwaInstall() {
 
   const promptInstall = async () => {
     if (deferredPrompt.value) {
-      deferredPrompt.value.prompt()
-      const { outcome } = await deferredPrompt.value.userChoice
-      if (outcome === 'accepted') {
-        isInstalled.value = true
-        isInstallable.value = false
+      try {
+        await deferredPrompt.value.prompt()
+        const userChoice = await deferredPrompt.value.userChoice
+        if (userChoice && userChoice.outcome === 'accepted') {
+          isInstalled.value = true
+          isInstallable.value = false
+        }
         deferredPrompt.value = null
+        return userChoice?.outcome || 'dismissed'
+      } catch (err) {
+        console.warn('Failed to invoke native install prompt:', err)
+        showGuideModal.value = true
+        return 'guide'
       }
-      return outcome
     } else {
       // Show manual installation guide if browser doesn't support automatic prompt
       showGuideModal.value = true

@@ -44,8 +44,8 @@ Fleetora is composed of 1 backend API service, 4 dedicated frontend applications
    - Dynamic PDF generation for invoices (`jspdf`, `jspdf-autotable`).
 
 3. **Customer Web Application (`fleetora/frontend/fleetora_web_vue3`)**:
-   - Customer booking interface with Google Maps routing, trip planner, price estimation, and realtime driver notifications via Socket.io.
-   - Modernized with Vue 3.5, Vuetify 4, Pinia, and Vite 7.
+   - Customer booking interface with MapLibre GL JS open-source routing, interactive dispatch console, price estimation, live Sétif fleet telemetry, and realtime driver notifications via Socket.io.
+   - Modernized with Vue 3.5, Vuetify 4, Pinia, MapLibre GL JS, and Vite 7. Zero Google Maps API key required for DEMO.
 
 4. **Customer Mobile Application (`fleetora/frontend/fleetora_vue3_capacitor6_client`)**:
    - Cross-platform Android & iOS app powered by Capacitor 6.
@@ -227,7 +227,82 @@ Fleetora introduces a dedicated design system built for logistics and freight mo
 
 ---
 
-## 8. Documentation Index
+## 9. Open-Source Mapping Stack & Fleet Architecture
+
+Fleetora has completely replaced Google Maps with an enterprise-grade, open-source geospatial stack powered by **MapLibre GL JS**, **OpenStreetMap-derived vector tiles**, **OSRM routing**, and **Nominatim geocoding**.
+
+### Core Architecture Components
+
+```text
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                          Fleetora Open-Source Map Engine                        │
+├─────────────────────┬──────────────────────────┬────────────────────────────────┤
+│ Map Rendering       │ MapLibre GL JS           │ WebGL vector & raster engine   │
+│ Map Data / Tiles    │ OpenStreetMap (CARTO GL) │ Configurable: VITE_MAP_STYLE_URL│
+│ Routing Provider    │ OSRM Driving Engine      │ GeoJSON LineString polylines   │
+│ Geocoding & Search  │ Nominatim OSM Engine     │ Debounced, cached & rate-limited│
+│ Telemetry / Fleet   │ Sétif Regional Simulator │ Status: Moving, Available, etc.│
+└─────────────────────┴──────────────────────────┴────────────────────────────────┘
+```
+
+### Environment Configuration
+
+In `frontend/fleetora_web_vue3/.env.example`:
+```env
+# MapLibre Map Style URL (CARTO Positron vector tiles derived from OpenStreetMap)
+VITE_MAP_STYLE_URL=https://basemaps.cartocdn.com/gl/positron-gl-style/style.json
+
+# Optional commercial tile provider key (MapTiler, Stadia) - Leave blank for open-source default
+VITE_MAP_API_KEY=
+
+# Open-source routing provider (OSRM)
+VITE_ROUTING_API_URL=https://router.project-osrm.org/route/v1/driving
+
+# Open-source geocoding provider (Nominatim)
+VITE_GEOCODING_API_URL=https://nominatim.openstreetmap.org
+```
+
+### Running the Demo Without Google Maps
+
+1. Seed the database with realistic Algerian and Sétif fleet accounts:
+   ```bash
+   cd backend
+   node scripts/seed.js
+   ```
+2. Start the Backend API:
+   ```bash
+   npm start
+   ```
+3. Start the Customer Web App:
+   ```bash
+   cd ../frontend/fleetora_web_vue3
+   npm run dev
+   ```
+4. Access `http://localhost:7072/` and log in with `+213550000003` / `client123456`.
+5. You will see the **Dispatch Console & Sétif Live Fleet** with real-time moving markers, vehicle telemetry, speed, status filters, and instant route generation without ever needing a Google API key.
+
+### Attribution Requirements
+
+Per OpenStreetMap license terms (ODbL), all maps rendered within Fleetora include required attribution:
+> **© OpenStreetMap contributors**
+
+This attribution is visibly embedded in the bottom-right corner of the map canvas via MapLibre's attribution control.
+
+### Demo vs Production Recommendations
+
+> [!IMPORTANT]
+> **DEMO Configuration**:
+> The demo uses public CARTO Positron OSM vector styles, demo OSRM routing (`router.project-osrm.org`), and public Nominatim geocoding with strict client-side debouncing (350ms), request cancellation, rate limiting (1 req/sec), in-memory caching, and Algerian preset logistics hubs.
+>
+> **PRODUCTION Configuration**:
+> For commercial scale production deployments:
+> 1. **Tiles**: Deploy a self-hosted vector tile server using [TileServer GL](https://github.com/maptiler/tileserver-gl) or [Martin](https://github.com/maplibre/martin) serving an Algeria/North-Africa `.mbtiles` extract (e.g. from Geofabrik), or subscribe to a dedicated provider (MapTiler, Stadia Maps, Protomaps). Do NOT use public OpenStreetMap raster tile servers as an unlimited commercial production backend.
+> 2. **Routing**: Host an internal [OSRM](https://project-osrm.org/) Docker instance (`osrm-backend`) loaded with Algeria OSM road networks for zero-latency, private turn-by-turn routing.
+> 3. **Geocoding**: Deploy a private [Nominatim](https://nominatim.org/) or [Pelias](https://pelias.io/) container for unlimited Algerian address lookups without third-party rate limits.
+
+---
+
+## 10. Documentation Index
 
 The following project reports document the modernization, brand transformation, and release verification:
 - [`FLEETORA_FINAL_RELEASE_VERIFICATION.md`](./FLEETORA_FINAL_RELEASE_VERIFICATION.md): Comprehensive end-to-end audit, test matrix, and release readiness verification.

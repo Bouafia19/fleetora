@@ -86,9 +86,11 @@ const vuetify = createVuetify({
 
 // Configure Axios with dynamic base URL
 let apiBase = import.meta.env.VITE_API_URL || 
-  (typeof window !== 'undefined' && (window.location.port === '7072' || window.location.port === '5173' || window.location.port === '5180') 
-    ? 'http://localhost:4000' 
-    : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000'))
+  (import.meta.env.PROD 
+    ? 'https://fleetora-api-93an.onrender.com'
+    : (typeof window !== 'undefined' && (window.location.port === '7072' || window.location.port === '5173' || window.location.port === '5180') 
+        ? 'http://localhost:4000' 
+        : (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000')))
 
 if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
   apiBase = `https://${apiBase}`

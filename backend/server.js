@@ -1,4 +1,5 @@
-require('dotenv').config()
+const path = require('path')
+require('dotenv').config({ path: path.resolve(__dirname, '.env') })
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
@@ -6,7 +7,6 @@ const helmet = require('helmet')
 const morgan = require('morgan')
 const rateLimit = require('express-rate-limit')
 const http = require('http')
-const path = require('path')
 const jwt = require('jsonwebtoken')
 const { Server } = require('socket.io')
 
@@ -44,12 +44,18 @@ if (process.env.NODE_ENV !== 'test') {
 const defaultAllowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5173',
+    'http://localhost:7072',
     'http://localhost:8080',
     'http://localhost:8081',
     'capacitor://localhost',
     'ionic://localhost',
     'https://localhost',
-    'https://fleetora.com.dz'
+    'https://fleetora.com.dz',
+    'https://www.fleetora.com.dz',
+    'https://fleetora-web.onrender.com',
+    'https://fleetora-admin.onrender.com',
+    'https://fleetora-partner.onrender.com',
+    'https://fleetora-client.onrender.com'
 ]
 
 const allowedOrigins = process.env.CORS_ORIGINS
@@ -213,7 +219,9 @@ app.use((err, req, res, next) => {
     }
     const statusCode = err.status || err.statusCode || 500
     res.status(statusCode).json({
-        error: err.message || 'Internal Server Error'
+        error: process.env.NODE_ENV === 'production' && statusCode === 500
+            ? 'Internal Server Error'
+            : (err.message || 'Internal Server Error')
     })
 })
 

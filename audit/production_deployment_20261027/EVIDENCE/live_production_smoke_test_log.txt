@@ -1,0 +1,28 @@
+================================================================
+FLEETORA LIVE PRODUCTION SMOKE TEST SUITE (17 CHECKPOINTS)
+Target Environment: https://fleetora-api-93an.onrender.com
+Timestamp: 2026-10-28T13:56:26.849Z
+================================================================
+
+[PASS] 1. API Health & Database Probe (HTTP 200)
+[PASS] 2. Administrator Login & JWT (HTTP 200)
+[PASS] 3. Client Login & Profile (HTTP 200)
+[PASS] 4. Partner Login & Profile (HTTP 200)
+[PASS] 5. Freight Vehicle Catalog (HTTP 200, 5 tiers)
+[PASS] 6. Scoped Trip History Query (HTTP 200, 1 trips)
+[PASS] 7. Billings Access Control (Anon:401, Client:403, Admin:200)
+[PASS] 8. Socket.io JWT Handshake (Socket ID: M4OjflXBC8l-FoxfAAAA)
+[PASS] 9. Socket Room Event Isolation
+[PASS] 10. CORS Perimeter Enforcement (Approved: https://fleetora-web.onrender.com, Evil: None)
+[PASS] 11. Auth Abuse Rate Limiting (Limit: 30)
+[PASS] 12. Partner KYC Photo IDOR (Anon:401, Client:403, Admin:200)
+[PASS] 13. Client Frontend Boot (HTTP 200)
+[PASS] 14. Vector Map Asset Loading (HTTP 200)
+[PASS] 15. Trip Creation Workflow (HTTP 200, Trip ID: 6ae1ff1120acb146ac8b2d68)
+    (Cleaned up synthetic test trip 6ae1ff1120acb146ac8b2d68)
+[PASS] 16. User Session Purge & Token Invalidation (HTTP 401)
+[PASS] 17. Transporter State Machine Enforcement (HTTP 200)
+
+================================================================
+FINAL LIVE SMOKE TEST RESULT: 17 / 17 PASSED
+================================================================

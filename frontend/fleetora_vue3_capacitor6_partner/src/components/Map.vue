@@ -1,163 +1,138 @@
 <template>
-  <div>
+  <div class="fl-partner-map-container">
     <div class="text-center" v-if="loading === true">
-        <v-row 
-        class="d-flex justify-center align-center"  
-        style="height: 80vh;"
-        >
-        <v-progress-circular
-            indeterminate
-            color="next"
-        ></v-progress-circular>
-        </v-row>
+      <v-row class="d-flex justify-center align-center" style="height: 80vh;">
+        <v-progress-circular indeterminate color="primary"></v-progress-circular>
+      </v-row>
     </div>
       
-            <div id="googleMap"></div>
-       
-
-     
+    <div ref="mapEl" class="fl-partner-map-canvas"></div>
   </div> 
 </template>
 
 <script setup>
-  import { ref, onMounted } from 'vue'
+  import { ref, onMounted, onBeforeUnmount } from 'vue'
   import { Geolocation } from '@capacitor/geolocation'
   import { LocationAccuracy } from '@awesome-cordova-plugins/location-accuracy'
+  import { createMapInstance, renderRoute } from '@/services/mapService'
+  import { calculateRoute } from '@/services/routingService'
+  import { ALGERIA_LOGISTICS_HUBS } from '@/services/geocodingService'
  
   const props = defineProps(['depart', 'arriver'])
  
-  let directionsService = null,
-      directionsDisplay = null,
-      map = null,
-      myLatLng = { lat: 28.0339, lng: 1.6596},
-      zoom = 5,
-      loading = ref(true)
+  const mapEl = ref(null)
+  let map = null
+  let myLatLng = { lat: 36.1911, lng: 5.4137 }
+  let zoom = 12
+  const loading = ref(true)
    
-   
-        const printCurrentPosition = async () => {
-            try {
-                const coordinates = await Geolocation.getCurrentPosition()
-                if(coordinates.coords){
-                    myLatLng = { lat: coordinates.coords.latitude, lng: coordinates.coords.longitude }
-                    zoom = 15
-                   
-                }else{
-                    zoom = 5
-                }
-            } catch (error) {
-            console.log('error', error)
-            }
-        }
+  const printCurrentPosition = async () => {
+    try {
+      const coordinates = await Geolocation.getCurrentPosition()
+      if(coordinates.coords){
+        myLatLng = { lat: coordinates.coords.latitude, lng: coordinates.coords.longitude }
+        zoom = 14
+      }
+    } catch (error) {
+      console.log('Location error:', error)
+    }
+  }
         
-      const setupMap = async () => {
-       
-        let mapOptions = {
-            center: myLatLng,
-            zoom: zoom,
-            // mapTypeId: google.maps.MapTypeId.ROADMAP
-        };
-        //create map
-        map = new google.maps.Map(document.getElementById('googleMap'), mapOptions)
-
+  const setupMap = async () => {
+    if (!mapEl.value) return
+    try {
+      map = createMapInstance(mapEl.value, {
+        center: [myLatLng.lng, myLatLng.lat],
+        zoom: zoom
+      })
+      map.on('load', () => {
         loading.value = false
-     
-        //create a DirectionsService object to use the route method and get a result for our request
-        directionsService = new google.maps.DirectionsService()
-
-        //create a DirectionsRenderer object which we will use to display the route
-        directionsDisplay = new google.maps.DirectionsRenderer()
-
-        // add traffic layer
-        const trafficLayer = new google.maps.TrafficLayer()
-
-        trafficLayer.setMap(map)
-
-        //bind the DirectionsRenderer to the map
-        directionsDisplay.setMap(map)
-
-       
         calcRoute()
-      }
+      })
+    } catch (e) {
+      console.warn('[Fleetora Partner Map] Setup fallback active:', e)
+      loading.value = false
+    }
+  }
 
-      //define calcRoute function
-    const calcRoute = () => {
-        const waypts = [];
+  const calcRoute = async () => {
+    if (!map) return
 
-        waypts.push({
-            location: props.depart,
-            stopover: true,
-        })
+    // Resolve coordinates for depart & arriver
+    let depCoord = myLatLng
+    let arrCoord = { lat: 36.1554, lng: 5.6982 } // Default Sétif/El Eulma hub
 
-        directionsService
-            .route({
-                origin: myLatLng,
-                destination: props.arriver,
-                waypoints: waypts,
-                optimizeWaypoints: true,
-                travelMode: google.maps.TravelMode.DRIVING,
-            })
-            .then((response) => {
-              directionsDisplay.setDirections(response);
-            })
-            .catch((e) => window.alert("Directions request failed due to "))
-      }
+    if (props.depart && typeof props.depart === 'object') {
+      depCoord = props.depart
+    } else if (typeof props.depart === 'string') {
+      const match = ALGERIA_LOGISTICS_HUBS.find(h => h.name.includes(props.depart) || h.city.includes(props.depart))
+      if (match) depCoord = { lat: match.lat, lng: match.lng }
+    }
 
-      const requestGps = async () => {
-        try {
-          const respense = await Geolocation.requestPermissions()
-        } catch (error) {
-          
+    if (props.arriver && typeof props.arriver === 'object') {
+      arrCoord = props.arriver
+    } else if (typeof props.arriver === 'string') {
+      const match = ALGERIA_LOGISTICS_HUBS.find(h => h.name.includes(props.arriver) || h.city.includes(props.arriver))
+      if (match) arrCoord = { lat: match.lat, lng: match.lng }
+    }
+
+    try {
+      const routeData = await calculateRoute(depCoord, arrCoord)
+      if (routeData && routeData.coordinates) {
+        renderRoute(map, routeData.coordinates, 'partner-trip-route')
+        if (routeData.bounds) {
+          map.fitBounds(routeData.bounds, { padding: 40, duration: 800 })
         }
       }
+    } catch (e) {
+      console.warn('[Fleetora Partner Route] Could not calculate route:', e)
+    }
+  }
 
-      const activateGps = async () => {
-        try {
-          const respense = await LocationAccuracy.request(LocationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY)
-            
-        } catch (error) {
-          
-        }
-      }
+  const requestGps = async () => {
+    try {
+      await Geolocation.requestPermissions()
+    } catch (error) {}
+  }
+
+  const activateGps = async () => {
+    try {
+      await LocationAccuracy.request(LocationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY)
+    } catch (error) {}
+  }
    
-      
-    // mounted lifecycle hook, creates the map
-    onMounted(() => {
-      requestGps().then(() => {
-        activateGps().then(() => {
-          printCurrentPosition().then(() => {
-            setupMap()
-          })
+  onMounted(() => {
+    requestGps().then(() => {
+      activateGps().then(() => {
+        printCurrentPosition().then(() => {
+          setupMap()
         })
       })
     })
+
+    setTimeout(() => {
+      if (loading.value) loading.value = false
+    }, 1500)
+  })
+
+  onBeforeUnmount(() => {
+    if (map) {
+      try {
+        map.remove()
+      } catch (e) {}
+      map = null
+    }
+  })
 </script>
 
 <style>
-  #googleMap { 
-    /* display: inline-block; */
+  .fl-partner-map-container {
     height: 100vh;
     width: 100%;
-    bottom: 0;
+    position: relative;
   }
-  .v-input__prepend-outer .v-icon { 
-    color: #00366f;
-  }
-  .v-text-field.v-text-field--enclosed .v-text-field__details {
-    margin-bottom: 0;
-  }
-  .custom-map-control-button {
-    background-color: #fff;
-    border: 0;
-    border-radius: 2px;
-    box-shadow: 0 1px 4px -1px rgba(0, 0, 0, 0.3);
-    margin: 10px;
-    padding: 0 0.5em;
-    font: 400 18px Roboto, Arial, sans-serif;
-    overflow: hidden;
-    height: 40px;
-    cursor: pointer;
-  }
-  .custom-map-control-button:hover {
-    background: rgb(235, 235, 235);
+  .fl-partner-map-canvas { 
+    height: 100%;
+    width: 100%;
   }
 </style>

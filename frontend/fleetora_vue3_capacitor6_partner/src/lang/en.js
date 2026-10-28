@@ -33,6 +33,8 @@ export default {
   passwordConfirmation: 'Password Confirmation',
   ip: 'Wrong phone',
   ipass: 'incorect password',
+  Map: 'Freight Map',
+  map: 'map',
   documentTitle: 'Documents to provide',
   documentParagraph: 'the following documents are intended for the constitution of the files of our partners.',
   grayCard: 'gray card',

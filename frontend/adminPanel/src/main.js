@@ -87,7 +87,7 @@ const vuetify = createVuetify({
 })
 
 // Dynamic API Base URL with fallback
-let apiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/'
+let apiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || (import.meta.env.PROD ? 'https://fleetora-api-93an.onrender.com/' : 'http://localhost:4000/')
 if (apiBase && !apiBase.startsWith('http://') && !apiBase.startsWith('https://')) {
   apiBase = `https://${apiBase}`
 }

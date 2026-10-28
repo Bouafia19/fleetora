@@ -1,5 +1,6 @@
 export default {
   Login: "Login",
+  "Sign In": "Sign In",
   SignUp: "Sign Up",
   //locale
   english: 'english',
@@ -34,6 +35,7 @@ export default {
   passwordConfirmation: 'Password Confirmation',
   ip: 'Wrong phone',
   ipass: 'incorect password',
+  Map: 'Freight Map',
   map: 'map',
   cgu: 'Unable to get user',
   Weight: 'Weight',
@@ -50,7 +52,7 @@ export default {
   yartuf: 'You are ready to use Fleetora',
   yaia: 'your account is activated. you can post and accept loads depending on your vehicule type and or fleet',
   ed: 'enter directions',
-  gmcncdta: 'google maps could not calculate distance, try again',
+  gmcncdta: 'Could not calculate route distance, please try again',
   igttac: 'I agree to the terms and conditions',
   close: 'Close',
   Fleetora: 'Fleetora',
